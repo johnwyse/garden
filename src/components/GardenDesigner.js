@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
-// Temporarily comment out the service import to avoid potential issues
-// import { generateGardenLayout as callGardenAPI } from '../services/gardenService';
+import { generateGardenLayout as callGardenAPI } from '../services/gardenService';
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
@@ -41,51 +40,9 @@ const GardenDesigner = () => {
     setGardenLayout('');
     
     try {
-      // Create bed summary for the layout
-      const bedSummary = [];
-      if (beds2x2 > 0) bedSummary.push(`${beds2x2} bed(s) 2x2 feet`);
-      if (beds4x4 > 0) bedSummary.push(`${beds4x4} bed(s) 4x4 feet`);
-      if (beds4x8 > 0) bedSummary.push(`${beds4x8} bed(s) 4x8 feet`);
-      
-      // Temporary simulation - replace with actual API call later
-      const simulatedLayout = `Garden Layout Plan:
-
-Bed Configuration: ${totalBeds} total bed(s)
-- ${bedSummary.join('\n- ')}
-
-Vegetable Arrangement:
-${selectedVegetables.map((veg, index) => `${index + 1}. ${veg}`).join('\n')}
-
-Layout Recommendations by Bed Size:
-
-2x2 feet beds (${beds2x2} beds):
-${beds2x2 > 0 ? '- Perfect for herbs, lettuce, radishes, or small plants\n- Plant 1-4 plants depending on size\n- Great for succession planting' : '- None selected'}
-
-4x4 feet beds (${beds4x4} beds):
-${beds4x4 > 0 ? '- Ideal for medium plants like peppers, bush beans, or compact tomatoes\n- Can fit 4-9 plants in a square foot grid\n- Good for companion planting combinations' : '- None selected'}
-
-4x8 feet beds (${beds4x8} beds):
-${beds4x8 > 0 ? '- Best for larger plants like tomatoes, corn, or sprawling vegetables\n- Place tall plants (tomatoes) on north side\n- Can accommodate 8-16 plants depending on type' : '- None selected'}
-
-General Tips:
-- Group companion plants together (e.g., tomatoes with basil, carrots with onions)
-- Leave adequate spacing between plants for proper growth
-- Consider succession planting for continuous harvests
-
-NOTE: This is a simulated response. The OpenAI integration will be added once the basic app is working.`;
-
-      // Simulate API delay
-      setTimeout(() => {
-        setGardenLayout(simulatedLayout);
-        setLoading(false);
-      }, 2000);
-
-      return;
-
-      // TODO: Uncomment when ready to use API
-      // Call the actual API
-      // const layout = await callGardenAPI(numBeds, bedSize, selectedVegetables);
-      // setGardenLayout(layout);
+      // Call the API with the new signature
+      const layout = await callGardenAPI(beds2x2, beds4x4, beds4x8, selectedVegetables);
+      setGardenLayout(layout);
     } catch (error) {
       console.error('Error generating garden layout:', error);
       setError(error.message || 'Failed to generate garden layout. Please try again.');
