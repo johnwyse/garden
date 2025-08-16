@@ -1,33 +1,50 @@
 // gardenService.js
-// This service handles API calls to OpenAI for garden layout generation
+// This service handles API calls to the backend for garden layout generation
 
-let OpenAI;
-let openai;
+export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, selectedVegetables) => {
+  try {
+    // Determine API endpoint based on environment
+    const apiUrl = process.env.NODE_ENV === 'production' 
+      ? '/api/generate-garden-layout'  // Vercel API route in production
+      : 'http://localhost:3001/api/generate-garden-layout'; // Local backend in development
 
-// Try to import OpenAI, but handle gracefully if it fails
-try {
-  OpenAI = require('openai').default || require('openai');
-  // Initialize OpenAI client only if we have an API key
-  if (process.env.REACT_APP_OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-      dangerouslyAllowBrowser: true // Only for development - use backend in production
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        beds2x2,
+        beds4x4,
+        beds4x8,
+        selectedVegetables
+      })
     });
-  }
-} catch (error) {
-  console.warn('OpenAI package not available or failed to load:', error.message);
-}
 
-export const generateGardenLayout = async (numBeds, bedSize, vegetables) => {
-  // Check if OpenAI is available and configured
-  if (!openai || !process.env.REACT_APP_OPENAI_API_KEY) {
-    // Return a simulated response when OpenAI isn't available
-    return `Garden Layout Plan (Simulated):
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate garden layout');
+    }
 
-Bed Configuration: ${numBeds} raised bed(s), each ${bedSize}
+    const data = await response.json();
+    return data.layout;
 
-Vegetable Arrangement:
-${vegetables.map((veg, index) => `${index + 1}. ${veg}`).join('\n')}
+  } catch (error) {
+    console.error('Error calling garden API:', error);
+    
+    // Fallback to simulated response if API fails
+    const totalBeds = (beds2x2 || 0) + (beds4x4 || 0) + (beds4x8 || 0);
+    const bedSummary = [];
+    if (beds2x2 > 0) bedSummary.push(`${beds2x2} bed(s) 2x2 feet`);
+    if (beds4x4 > 0) bedSummary.push(`${beds4x4} bed(s) 4x4 feet`);
+    if (beds4x8 > 0) bedSummary.push(`${beds4x8} bed(s) 4x8 feet`);
+
+    return `Garden Layout Plan (Fallback):
+
+Bed Configuration: ${totalBeds} total bed(s)
+- ${bedSummary.join('\n- ')}
+
+Vegetable Selection: ${selectedVegetables.join(', ')}
 
 Layout Recommendations:
 - Place taller plants (like tomatoes) on the north side to avoid shading shorter plants
@@ -35,50 +52,6 @@ Layout Recommendations:
 - Leave adequate spacing between plants for proper growth
 - Consider succession planting for continuous harvests
 
-NOTE: This is a simulated response. To get AI-generated recommendations, add your OpenAI API key to the environment variables (REACT_APP_OPENAI_API_KEY).`;
+NOTE: API connection failed. This is a fallback response. Error: ${error.message}`;
   }
-
-  try {
-    const prompt = `Please design a vegetable garden layout with the following specifications:
-    - Number of raised beds: ${numBeds}
-    - Size of each bed: ${bedSize}
-    - Vegetables to include: ${vegetables.join(', ')}
-    
-    Please provide a detailed layout plan including:
-    1. How to arrange the vegetables in each bed
-    2. Spacing recommendations
-    3. Companion planting suggestions
-    4. Any seasonal considerations
-    5. A visual representation using ASCII art or simple text layout
-    
-    Format the response in a clear, organized manner that would be helpful for a gardener.`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert gardener and landscape designer specializing in vegetable gardens. Provide practical, detailed advice for garden layouts."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 1000,
-      temperature: 0.7,
-    });
-
-    return completion.choices[0].message.content;
-  } catch (error) {
-    console.error('Error calling OpenAI API:', error);
-    throw new Error('Failed to generate garden layout. Please check your API key and try again.');
-  }
-};
-
-// Alternative function for GitHub Copilot API (if available)
-export const generateGardenLayoutWithCopilot = async (numBeds, bedSize, vegetables) => {
-  // This would be implemented based on GitHub Copilot's API when available
-  // For now, this is a placeholder
-  throw new Error('GitHub Copilot API integration not yet implemented');
 };
