@@ -319,6 +319,9 @@
   border: 1px solid rgba(76, 175, 80, 0.1);
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.summary-section.loading {
   animation: pulse 2s ease-in-out infinite alternate;
 }
 
@@ -335,7 +338,7 @@
   gap: 8px;
 }
 
-.summary-section h2::after {
+.summary-section.loading h2::after {
   content: '🌱';
   animation: grow 1.5s ease-in-out infinite;
 }

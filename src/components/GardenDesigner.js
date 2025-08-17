@@ -258,9 +258,9 @@ const GardenDesigner = () => {
         </div>
       )}
 
-      {loading && (
-        <div className="summary-section">
-          <h2>Generating Layout for Your Garden...</h2>
+      {(loading || gardenLayout) && (
+        <div className={`summary-section ${loading ? 'loading' : ''}`}>
+          <h2>{loading ? 'Generating Layout for Your Garden...' : 'Your Garden Summary'}</h2>
           <div className="selection-summary">
             <div className="summary-category">
               <h4>🏡 Garden Infrastructure</h4>
