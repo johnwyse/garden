@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
-import { generateGardenLayout as callGardenAPI, generateGardenImage as callGardenImageAPI } from '../services/gardenService';
+import { generateGardenLayout as callGardenAPI, generateGardenSVG as callGardenSVGAPI } from '../services/gardenService';
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
@@ -79,10 +79,10 @@ const GardenDesigner = () => {
       
       setGardenLayout(displayLayout);
 
-      // Then, generate the image using the full layout (including visualization data) as context
-      const imageUrl = await callGardenImageAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
-      if (imageUrl) {
-        setGardenImage(imageUrl);
+      // Then, generate the SVG diagram using the visualization data as context
+      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
+      if (svgUrl) {
+        setGardenImage(svgUrl);
       }
 
     } catch (error) {
@@ -282,7 +282,7 @@ const GardenDesigner = () => {
 
       {(loading || gardenLayout) && (
         <div className={`summary-section ${loading ? 'loading' : ''}`}>
-          <h2>{loading ? 'Generating Your Garden Layout & Visualization...' : 'Your Garden Summary'}</h2>
+          <h2>{loading ? 'Generating Your Garden Layout & Blueprint...' : 'Your Garden Summary'}</h2>
           <div className="selection-summary">
             <div className="summary-category">
               <h4>🏡 Garden Infrastructure</h4>
@@ -354,7 +354,7 @@ const GardenDesigner = () => {
                 alt="Generated garden layout blueprint diagram" 
                 className="garden-image"
               />
-              <p className="image-caption">AI-generated blueprint diagram for garden planning</p>
+              <p className="image-caption">AI-generated SVG blueprint for precise garden planning</p>
             </div>
           )}
           

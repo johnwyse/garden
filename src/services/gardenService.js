@@ -104,3 +104,51 @@ export const generateGardenImage = async (beds2x2, beds4x4, beds4x8, trellises, 
     return null;
   }
 };
+
+// Function to generate garden layout SVG using GPT-4
+export const generateGardenSVG = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText = null) => {
+  try {
+    // Determine API endpoint based on environment
+    const apiUrl = process.env.NODE_ENV === 'production' 
+      ? '/api/generate-garden-svg'  // Vercel API route in production
+      : 'http://localhost:3001/api/generate-garden-svg'; // Local backend in development
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        beds2x2,
+        beds4x4,
+        beds4x8,
+        trellises,
+        tomatoCages,
+        selectedVegetables,
+        layoutText
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to generate garden SVG: ${errorText}`);
+    }
+
+    // Get the SVG content directly
+    const svgContent = await response.text();
+    
+    // Create a data URL for the SVG
+    const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgContent)}`;
+    
+    return svgDataUrl;
+
+  } catch (error) {
+    console.error('Error calling garden SVG API:', error);
+    
+    // Add a small delay to show the loading state
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Return null if SVG generation fails - we'll handle this gracefully in the UI
+    return null;
+  }
+};
