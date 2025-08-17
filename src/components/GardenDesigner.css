@@ -430,6 +430,47 @@
   text-align: center;
 }
 
+.garden-image-container {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.garden-image-container h3 {
+  color: #2d5a3d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.garden-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
+  border: 2px solid #e8f5e8;
+  transition: transform 0.3s ease;
+}
+
+.garden-image:hover {
+  transform: scale(1.02);
+}
+
+.image-caption {
+  margin: 10px 0 0 0;
+  font-size: 0.8rem;
+  color: #5a7c5a;
+  font-style: italic;
+}
+
+.layout-text-container h3 {
+  color: #2d5a3d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
 .layout-output {
   background: #f8fdf8;
   padding: 15px;

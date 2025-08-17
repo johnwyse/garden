@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
-import { generateGardenLayout as callGardenAPI } from '../services/gardenService';
+import { generateGardenLayout as callGardenAPI, generateGardenImage as callGardenImageAPI } from '../services/gardenService';
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
@@ -11,6 +11,7 @@ const GardenDesigner = () => {
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
+  const [gardenImage, setGardenImage] = useState('');
   const [error, setError] = useState('');
 
   // List of plants organized by category
@@ -58,13 +59,21 @@ const GardenDesigner = () => {
     setLoading(true);
     setError('');
     setGardenLayout('');
+    setGardenImage('');
     
     try {
-      // Call the API with the new signature
+      // First, generate the garden layout text
       const layout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
       setGardenLayout(layout);
+
+      // Then, generate the image using the layout as context for alignment
+      const imageUrl = await callGardenImageAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layout);
+      if (imageUrl) {
+        setGardenImage(imageUrl);
+      }
+
     } catch (error) {
-      console.error('Error generating garden layout:', error);
+      console.error('Error generating garden content:', error);
       setError(error.message || 'Failed to generate garden layout. Please try again.');
     } finally {
       setLoading(false);
@@ -260,7 +269,7 @@ const GardenDesigner = () => {
 
       {(loading || gardenLayout) && (
         <div className={`summary-section ${loading ? 'loading' : ''}`}>
-          <h2>{loading ? 'Generating Layout for Your Garden...' : 'Your Garden Summary'}</h2>
+          <h2>{loading ? 'Generating Your Garden Layout & Visualization...' : 'Your Garden Summary'}</h2>
           <div className="selection-summary">
             <div className="summary-category">
               <h4>🏡 Garden Infrastructure</h4>
@@ -323,7 +332,23 @@ const GardenDesigner = () => {
       {gardenLayout && !loading && (
         <div className="results-section">
           <h2>Your Garden Layout</h2>
-          <pre className="layout-output">{gardenLayout}</pre>
+          
+          {gardenImage && (
+            <div className="garden-image-container">
+              <h3>Visual Layout</h3>
+              <img 
+                src={gardenImage} 
+                alt="Generated garden layout visualization" 
+                className="garden-image"
+              />
+              <p className="image-caption">AI-generated visualization of your garden layout</p>
+            </div>
+          )}
+          
+          <div className="layout-text-container">
+            <h3>Detailed Recommendations</h3>
+            <pre className="layout-output">{gardenLayout}</pre>
+          </div>
         </div>
       )}
     </div>
