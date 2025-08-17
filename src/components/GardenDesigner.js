@@ -11,19 +11,33 @@ const GardenDesigner = () => {
   const [gardenLayout, setGardenLayout] = useState('');
   const [error, setError] = useState('');
 
-  // List of common vegetables
+  // List of plants organized by category
   const vegetables = [
     'Tomatoes', 'Lettuce', 'Carrots', 'Peppers', 'Onions', 'Spinach',
     'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli',
     'Cauliflower', 'Kale', 'Swiss Chard', 'Beets', 'Corn', 'Squash',
-    'Herbs (Basil, Cilantro, Parsley)', 'Eggplant'
+    'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'
   ];
 
-  const handleVegetableChange = (vegetable) => {
+  const fruits = [
+    'Strawberries', 'Blueberries', 'Raspberries', 'Blackberries',
+    'Rhubarb', 'Melons', 'Watermelons', 'Cantaloupe'
+  ];
+
+  const herbs = [
+    'Basil', 'Cilantro', 'Parsley', 'Oregano', 'Thyme', 'Rosemary',
+    'Sage', 'Chives', 'Dill', 'Mint', 'Lavender', 'Tarragon'
+  ];
+
+  const companions = [
+    'Wildflowers', 'Marigolds', 'Nasturtiums', 'Sunflowers'
+  ];
+
+  const handleVegetableChange = (plant) => {
     setSelectedVegetables(prev => 
-      prev.includes(vegetable)
-        ? prev.filter(v => v !== vegetable)
-        : [...prev, vegetable]
+      prev.includes(plant)
+        ? prev.filter(v => v !== plant)
+        : [...prev, plant]
     );
   };
 
@@ -31,7 +45,7 @@ const GardenDesigner = () => {
     const totalBeds = beds2x2 + beds4x4 + beds4x8;
     
     if (totalBeds === 0 || selectedVegetables.length === 0) {
-      alert('Please select at least one bed and one vegetable.');
+      alert('Please select at least one bed and one plant.');
       return;
     }
 
@@ -53,14 +67,14 @@ const GardenDesigner = () => {
 
   return (
     <div className="garden-designer">
-      <h1>AI Garden Layout Designer</h1>
+      <h1>Garden Layout Designer</h1>
       
       <div className="input-section">
         <h3>Select Your Raised Beds</h3>
         
         <div className="beds-grid">
           <div className="input-group">
-            <label htmlFor="beds2x2">2x2 feet beds:</label>
+            <label htmlFor="beds2x2">2' x 2' beds:</label>
             <select 
               id="beds2x2"
               value={beds2x2} 
@@ -73,7 +87,7 @@ const GardenDesigner = () => {
           </div>
 
           <div className="input-group">
-            <label htmlFor="beds4x4">4x4 feet beds:</label>
+            <label htmlFor="beds4x4">4' x 4' beds:</label>
             <select 
               id="beds4x4"
               value={beds4x4} 
@@ -86,7 +100,7 @@ const GardenDesigner = () => {
           </div>
 
           <div className="input-group">
-            <label htmlFor="beds4x8">4x8 feet beds:</label>
+            <label htmlFor="beds4x8">4' x 8' beds:</label>
             <select 
               id="beds4x8"
               value={beds4x8} 
@@ -112,18 +126,73 @@ const GardenDesigner = () => {
         )}
 
         <div className="input-group">
-          <label>Select Vegetables:</label>
-          <div className="vegetables-grid">
-            {vegetables.map(vegetable => (
-              <label key={vegetable} className="vegetable-checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedVegetables.includes(vegetable)}
-                  onChange={() => handleVegetableChange(vegetable)}
-                />
-                {vegetable}
-              </label>
-            ))}
+          <label>Select Plants for Your Garden:</label>
+          
+          <div className="plant-categories">
+            <div className="plant-category">
+              <h4>🥕 Vegetables</h4>
+              <div className="plants-grid">
+                {vegetables.map(vegetable => (
+                  <label key={vegetable} className="plant-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedVegetables.includes(vegetable)}
+                      onChange={() => handleVegetableChange(vegetable)}
+                    />
+                    {vegetable}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="plant-category">
+              <h4>🍓 Fruits</h4>
+              <div className="plants-grid">
+                {fruits.map(fruit => (
+                  <label key={fruit} className="plant-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedVegetables.includes(fruit)}
+                      onChange={() => handleVegetableChange(fruit)}
+                    />
+                    {fruit}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="plant-category">
+              <h4>🌿 Herbs</h4>
+              <div className="plants-grid">
+                {herbs.map(herb => (
+                  <label key={herb} className="plant-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedVegetables.includes(herb)}
+                      onChange={() => handleVegetableChange(herb)}
+                    />
+                    {herb}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="plant-category companions-section">
+              <h4>🌸 Companion Plants & Flowers</h4>
+              <p className="category-description">Optional additions for pest control and pollinator attraction</p>
+              <div className="plants-grid">
+                {companions.map(companion => (
+                  <label key={companion} className="plant-checkbox companion-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedVegetables.includes(companion)}
+                      onChange={() => handleVegetableChange(companion)}
+                    />
+                    {companion}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
