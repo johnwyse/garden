@@ -59,11 +59,47 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    // Categorize the selected plants
+    const vegetables = [];
+    const greens = [];
+    const fruits = [];
+    const herbs = [];
+    const companions = [];
+    
+    // Define plant categories
+    const vegetableList = ['Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'];
+    const greensList = ['Lettuce', 'Spinach', 'Kale', 'Swiss Chard', 'Arugula', 'Bok Choy', 'Collard Greens', 'Mustard Greens', 'Watercress', 'Endive'];
+    const fruitsList = ['Strawberries', 'Blueberries', 'Raspberries', 'Blackberries', 'Rhubarb', 'Melons', 'Watermelons', 'Cantaloupe'];
+    const herbsList = ['Basil', 'Cilantro', 'Parsley', 'Oregano', 'Thyme', 'Rosemary', 'Sage', 'Chives', 'Dill', 'Mint', 'Lavender', 'Tarragon'];
+    const companionsList = ['Wildflowers', 'Marigolds', 'Nasturtiums', 'Sunflowers'];
+    
+    // Categorize selected plants
+    selectedVegetables.forEach(plant => {
+      if (vegetableList.includes(plant)) vegetables.push(plant);
+      else if (greensList.includes(plant)) greens.push(plant);
+      else if (fruitsList.includes(plant)) fruits.push(plant);
+      else if (herbsList.includes(plant)) herbs.push(plant);
+      else if (companionsList.includes(plant)) companions.push(plant);
+    });
+
     // Create prompt for OpenAI
     const prompt = `Please design a vegetable garden layout with the following specifications:
-    - Total beds: ${totalBeds}
-    - Bed configuration: ${bedSummary.join(', ')}
-    - Vegetables to include: ${selectedVegetables.join(', ')}
+    
+    GARDEN SUMMARY:
+    =================
+    Raised Beds: ${totalBeds} total beds (${bedSummary.join(', ')})
+    
+    Selected Plants by Category:
+    ${[
+      vegetables.length > 0 ? `• Vegetables (${vegetables.length}): ${vegetables.join(', ')}` : '',
+      greens.length > 0 ? `• Greens (${greens.length}): ${greens.join(', ')}` : '',
+      fruits.length > 0 ? `• Fruits (${fruits.length}): ${fruits.join(', ')}` : '',
+      herbs.length > 0 ? `• Herbs (${herbs.length}): ${herbs.join(', ')}` : '',
+      companions.length > 0 ? `• Companion Plants & Flowers (${companions.length}): ${companions.join(', ')}` : ''
+    ].filter(line => line).join('\n    ')}
+    
+    Total Plants Selected: ${selectedVegetables.length}
+    =================
     
     Please provide a detailed layout plan including:
     1. How to arrange the vegetables in each bed size
@@ -77,8 +113,11 @@ export default async function handler(req, res) {
     Consider that:
     - 2x2 feet beds are best for herbs and small plants
     - 4x4 feet beds work well for medium plants and companion planting
-    - 4x8 feet beds are ideal for larger plants like tomatoes and corn`;
+    - 4x8 feet beds are ideal for larger plants like tomatoes and corn
+    
+    If there are too many plants selected for the given area, make sure to explain that and what you recommend removing`;
 
+    
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",

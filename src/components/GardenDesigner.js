@@ -13,10 +13,14 @@ const GardenDesigner = () => {
 
   // List of plants organized by category
   const vegetables = [
-    'Tomatoes', 'Lettuce', 'Carrots', 'Peppers', 'Onions', 'Spinach',
-    'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli',
-    'Cauliflower', 'Kale', 'Swiss Chard', 'Beets', 'Corn', 'Squash',
-    'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'
+    'Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 
+    'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 
+    'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'
+  ];
+
+  const greens = [
+    'Lettuce', 'Spinach', 'Kale', 'Swiss Chard', 'Arugula', 'Bok Choy',
+    'Collard Greens', 'Mustard Greens', 'Watercress', 'Endive'
   ];
 
   const fruits = [
@@ -113,18 +117,6 @@ const GardenDesigner = () => {
           </div>
         </div>
 
-        {(beds2x2 > 0 || beds4x4 > 0 || beds4x8 > 0) && (
-          <div className="beds-summary">
-            <h4>Your Garden Summary:</h4>
-            <p>Total beds: {beds2x2 + beds4x4 + beds4x8}</p>
-            <ul>
-              {beds2x2 > 0 && <li>{beds2x2} × 2x2 feet beds</li>}
-              {beds4x4 > 0 && <li>{beds4x4} × 4x4 feet beds</li>}
-              {beds4x8 > 0 && <li>{beds4x8} × 4x8 feet beds</li>}
-            </ul>
-          </div>
-        )}
-
         <div className="input-group">
           <label>Select Plants for Your Garden:</label>
           
@@ -140,6 +132,22 @@ const GardenDesigner = () => {
                       onChange={() => handleVegetableChange(vegetable)}
                     />
                     {vegetable}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="plant-category">
+              <h4>🥬 Greens</h4>
+              <div className="plants-grid">
+                {greens.map(green => (
+                  <label key={green} className="plant-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedVegetables.includes(green)}
+                      onChange={() => handleVegetableChange(green)}
+                    />
+                    {green}
                   </label>
                 ))}
               </div>
