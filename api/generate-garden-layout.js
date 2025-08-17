@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { beds2x2, beds4x4, beds4x8, selectedVegetables } = req.body;
+    const { beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables } = req.body;
 
     // Validate input
     if (!selectedVegetables || selectedVegetables.length === 0) {
@@ -40,6 +40,11 @@ export default async function handler(req, res) {
     if (beds4x4 > 0) bedSummary.push(`${beds4x4} bed(s) 4x4 feet`);
     if (beds4x8 > 0) bedSummary.push(`${beds4x8} bed(s) 4x8 feet`);
 
+    // Create support structure summary
+    const supportSummary = [];
+    if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
+    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage(s)`);
+
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
       // Return a simple placeholder response
@@ -47,7 +52,8 @@ export default async function handler(req, res) {
 
         Your Selection:
         - Beds: ${bedSummary.join(', ')}
-        - Vegetables: ${selectedVegetables.join(', ')}
+        ${supportSummary.length > 0 ? `- Support Structures: ${supportSummary.join(', ')}` : ''}
+        - Plants: ${selectedVegetables.join(', ')}
 
         To get personalized garden layouts, add your OPENAI_API_KEY environment variable in your Vercel deployment settings.`;
 
@@ -88,6 +94,7 @@ export default async function handler(req, res) {
     GARDEN SUMMARY:
     =================
     Raised Beds: ${totalBeds} total beds (${bedSummary.join(', ')})
+    ${supportSummary.length > 0 ? `Support Structures: ${supportSummary.join(', ')}` : ''}
     
     Selected Plants by Category:
     ${[
@@ -105,8 +112,9 @@ export default async function handler(req, res) {
     1. How to arrange the vegetables in each bed size
     2. Specific spacing recommendations for each bed size
     3. Companion planting suggestions
-    4. Seasonal considerations
-    5. A simple visual representation or layout description
+    4. How to best utilize the available trellises and tomato cages with appropriate plants
+    5. Seasonal considerations
+    6. A simple visual representation or layout description
     
     Format the response in a clear, organized manner that would be helpful for a gardener.
     
@@ -114,8 +122,11 @@ export default async function handler(req, res) {
     - 2x2 feet beds are best for herbs and small plants
     - 4x4 feet beds work well for medium plants and companion planting
     - 4x8 feet beds are ideal for larger plants like tomatoes and corn
+    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and some tomatoes
+    - Tomato cages are specifically designed for supporting tomato plants and can also work for peppers and eggplants
+    - Match climbing/vining plants to available support structures
     
-    If there are too many plants selected for the given area, make sure to explain that and what you recommend removing`;
+    If there are too many plants selected for the given area, make sure to explain that and what you recommend removing. If there are climbing plants selected but no support structures, recommend adding trellises or suggest alternative growing methods`;
 
     
     // Call OpenAI API

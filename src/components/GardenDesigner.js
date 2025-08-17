@@ -6,6 +6,8 @@ const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
   const [beds4x4, setBeds4x4] = useState(0);
   const [beds4x8, setBeds4x8] = useState(0);
+  const [trellises, setTrellises] = useState(0);
+  const [tomatoCages, setTomatoCages] = useState(0);
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
@@ -59,7 +61,7 @@ const GardenDesigner = () => {
     
     try {
       // Call the API with the new signature
-      const layout = await callGardenAPI(beds2x2, beds4x4, beds4x8, selectedVegetables);
+      const layout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
       setGardenLayout(layout);
     } catch (error) {
       console.error('Error generating garden layout:', error);
@@ -67,6 +69,17 @@ const GardenDesigner = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to categorize selected plants for summary
+  const categorizeSelectedPlants = () => {
+    const selectedVeggies = selectedVegetables.filter(plant => vegetables.includes(plant));
+    const selectedGreens = selectedVegetables.filter(plant => greens.includes(plant));
+    const selectedFruits = selectedVegetables.filter(plant => fruits.includes(plant));
+    const selectedHerbs = selectedVegetables.filter(plant => herbs.includes(plant));
+    const selectedCompanions = selectedVegetables.filter(plant => companions.includes(plant));
+    
+    return { selectedVeggies, selectedGreens, selectedFruits, selectedHerbs, selectedCompanions };
   };
 
   return (
@@ -109,6 +122,32 @@ const GardenDesigner = () => {
               id="beds4x8"
               value={beds4x8} 
               onChange={(e) => setBeds4x8(parseInt(e.target.value))}
+            >
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="trellises">Trellises:</label>
+            <select 
+              id="trellises"
+              value={trellises} 
+              onChange={(e) => setTrellises(parseInt(e.target.value))}
+            >
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="tomatoCages">Tomato Cages:</label>
+            <select 
+              id="tomatoCages"
+              value={tomatoCages} 
+              onChange={(e) => setTomatoCages(parseInt(e.target.value))}
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                 <option key={num} value={num}>{num}</option>
@@ -219,7 +258,69 @@ const GardenDesigner = () => {
         </div>
       )}
 
-      {gardenLayout && (
+      {loading && (
+        <div className="summary-section">
+          <h2>Generating Layout for Your Garden...</h2>
+          <div className="selection-summary">
+            <div className="summary-category">
+              <h4>🏡 Garden Infrastructure</h4>
+              <div className="summary-items">
+                {beds2x2 > 0 && <p>{beds2x2} × 2x2 feet bed{beds2x2 > 1 ? 's' : ''}</p>}
+                {beds4x4 > 0 && <p>{beds4x4} × 4x4 feet bed{beds4x4 > 1 ? 's' : ''}</p>}
+                {beds4x8 > 0 && <p>{beds4x8} × 4x8 feet bed{beds4x8 > 1 ? 's' : ''}</p>}
+                {trellises > 0 && <p>{trellises} × Trellis{trellises > 1 ? 'es' : ''}</p>}
+                {tomatoCages > 0 && <p>{tomatoCages} × Tomato Cage{tomatoCages > 1 ? 's' : ''}</p>}
+                <p className="total-beds">Total: {beds2x2 + beds4x4 + beds4x8} bed{beds2x2 + beds4x4 + beds4x8 > 1 ? 's' : ''}</p>
+              </div>
+            </div>
+
+            <div className="summary-category">
+              <h4>🌱 Selected Plants ({selectedVegetables.length} total)</h4>
+              <div className="summary-plants">
+                {(() => {
+                  const { selectedVeggies, selectedGreens, selectedFruits, selectedHerbs, selectedCompanions } = categorizeSelectedPlants();
+                  return (
+                    <>
+                      {selectedVeggies.length > 0 && (
+                        <div className="plant-group">
+                          <strong>🥕 Vegetables ({selectedVeggies.length}):</strong>
+                          <span>{selectedVeggies.join(', ')}</span>
+                        </div>
+                      )}
+                      {selectedGreens.length > 0 && (
+                        <div className="plant-group">
+                          <strong>🥬 Greens ({selectedGreens.length}):</strong>
+                          <span>{selectedGreens.join(', ')}</span>
+                        </div>
+                      )}
+                      {selectedFruits.length > 0 && (
+                        <div className="plant-group">
+                          <strong>🍓 Fruits ({selectedFruits.length}):</strong>
+                          <span>{selectedFruits.join(', ')}</span>
+                        </div>
+                      )}
+                      {selectedHerbs.length > 0 && (
+                        <div className="plant-group">
+                          <strong>🌿 Herbs ({selectedHerbs.length}):</strong>
+                          <span>{selectedHerbs.join(', ')}</span>
+                        </div>
+                      )}
+                      {selectedCompanions.length > 0 && (
+                        <div className="plant-group">
+                          <strong>🌸 Companions ({selectedCompanions.length}):</strong>
+                          <span>{selectedCompanions.join(', ')}</span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {gardenLayout && !loading && (
         <div className="results-section">
           <h2>Your Garden Layout</h2>
           <pre className="layout-output">{gardenLayout}</pre>

@@ -1,7 +1,7 @@
 // gardenService.js
 // This service handles API calls to the backend for garden layout generation
 
-export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, selectedVegetables) => {
+export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables) => {
   try {
     // Determine API endpoint based on environment
     const apiUrl = process.env.NODE_ENV === 'production' 
@@ -17,6 +17,8 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, selectedVe
         beds2x2,
         beds4x4,
         beds4x8,
+        trellises,
+        tomatoCages,
         selectedVegetables
       })
     });
@@ -38,13 +40,17 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, selectedVe
     if (beds2x2 > 0) bedSummary.push(`${beds2x2} bed(s) 2x2 feet`);
     if (beds4x4 > 0) bedSummary.push(`${beds4x4} bed(s) 4x4 feet`);
     if (beds4x8 > 0) bedSummary.push(`${beds4x8} bed(s) 4x8 feet`);
+    
+    const supportSummary = [];
+    if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
+    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage(s)`);
 
     return `Garden Layout Plan (Fallback):
 
 Bed Configuration: ${totalBeds} total bed(s)
 - ${bedSummary.join('\n- ')}
 
-Vegetable Selection: ${selectedVegetables.join(', ')}
+${supportSummary.length > 0 ? `Plant Support: ${supportSummary.join(', ')}\n\n` : ''}Vegetable Selection: ${selectedVegetables.join(', ')}
 
 Layout Recommendations:
 - Place taller plants (like tomatoes) on the north side to avoid shading shorter plants
