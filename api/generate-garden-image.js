@@ -71,45 +71,51 @@ export default async function handler(req, res) {
     const selectedCompanions = selectedVegetables.filter(plant => companions.includes(plant));
 
     // Create detailed DALL-E prompt using the layout text for alignment
-    let prompt = `Create a detailed bird's-eye view illustration of a vegetable garden layout. The garden should include:
+    let prompt = `Create a detailed garden layout blueprint diagram showing EXACTLY these specifications:
 
-GARDEN BEDS: ${bedSummary.join(', ')} arranged in an organized pattern with pathways between them.
+PRECISE GARDEN BLUEPRINT:
+- Draw exactly ${totalBeds} rectangular raised bed(s): ${bedSummary.join(', ')}
+- Each bed clearly labeled with dimensions (2x2, 4x4, or 4x8 feet)
+${supportSummary.length > 0 ? `- Include exactly ${supportSummary.join(' and ')} with clear icons` : ''}
 
-PLANTS: Show the following plants growing in appropriate sections of the beds:
-${selectedVeggies.length > 0 ? `- Vegetables: ${selectedVeggies.join(', ')}` : ''}
-${selectedGreens.length > 0 ? `- Leafy Greens: ${selectedGreens.join(', ')}` : ''}
-${selectedFruits.length > 0 ? `- Fruits: ${selectedFruits.join(', ')}` : ''}
-${selectedHerbs.length > 0 ? `- Herbs: ${selectedHerbs.join(', ')}` : ''}
-${selectedCompanions.length > 0 ? `- Companion Plants: ${selectedCompanions.join(', ')}` : ''}
+PLANT ICONS TO INCLUDE (use specific helpful symbols):
+${selectedVeggies.length > 0 ? `🍅 Vegetables (${selectedVeggies.length}): ${selectedVeggies.join(', ')} - use tomato, carrot, pepper icons` : ''}
+${selectedGreens.length > 0 ? `🥬 Leafy Greens (${selectedGreens.length}): ${selectedGreens.join(', ')} - use leaf symbols` : ''}
+${selectedFruits.length > 0 ? `🍓 Fruits (${selectedFruits.length}): ${selectedFruits.join(', ')} - use berry and fruit icons` : ''}
+${selectedHerbs.length > 0 ? `🌿 Herbs (${selectedHerbs.length}): ${selectedHerbs.join(', ')} - use small herb leaf symbols` : ''}
+${selectedCompanions.length > 0 ? `🌸 Companion Plants (${selectedCompanions.length}): ${selectedCompanions.join(', ')} - use flower symbols` : ''}
 
-${supportSummary.length > 0 ? `SUPPORT STRUCTURES: Include ${supportSummary.join(' and ')} positioned appropriately near climbing plants.` : ''}`;
+SUPPORT STRUCTURE ICONS:
+${trellises > 0 ? `🏗️ ${trellises} Trellis(es) - draw as vertical grid/lattice rectangles near climbing plants` : ''}
+${tomatoCages > 0 ? `🔺 ${tomatoCages} Tomato Cage(s) - draw as triangular/cone symbols near tomato plants` : ''}
 
-    // If we have layout text from GPT, use it to inform the visual layout
+BLUEPRINT STYLE REQUIREMENTS:
+- Top-down architectural view (like a landscape plan)
+- Clean black lines on white background with colored plant icons
+- Each bed drawn as a labeled rectangle with exact dimensions
+- Plants positioned logically within beds using recognizable icons/symbols
+- Support structures clearly marked with simple geometric shapes
+- Include a legend/key showing what each icon represents
+- Grid lines or measurement marks for spacing reference
+- Plant labels next to each icon for clarity`;
+
+    // If we have visualization data from GPT, use it to inform the precise layout
     if (layoutText && typeof layoutText === 'string') {
-      // Extract key layout information from the text
-      const layoutInfo = layoutText.substring(0, 500); // Use first 500 chars for context
-      prompt += `\n\nLAYOUT GUIDANCE: Follow this specific layout plan: ${layoutInfo}`;
+      // Use the detailed visualization data for precise positioning
+      const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
+      prompt += `\n\nPRECISE LAYOUT INSTRUCTIONS: ${cleanLayoutText}`;
+      prompt += `\n\nFollow these positioning details exactly - use this to determine where each plant icon should be placed within each bed and where support structures should be positioned.`;
     }
 
-    prompt += `\n\nThe illustration should be:
-- A realistic garden view from above showing rectangular raised beds
-- Plants should be recognizable and properly sized for their type
-- Include garden pathways between beds
-- Use natural garden colors (greens, browns, earth tones)
-- Show plants at a mid-growing stage, not seedlings
-- Organized and well-planned layout following the specific guidance provided
-- Include some soil texture and garden path materials
-- Bright, clear daylight lighting
+    prompt += `\n\nSTYLE: Professional landscape architecture blueprint with helpful plant icons. Black lines on white background with colorful, recognizable plant symbols (tomatoes, carrots, leaves, etc.). Include a clear legend/key. Focus on practical garden planning utility - make it easy to understand where each specific plant goes and where to place support structures.`;
 
-Style: Detailed garden illustration, realistic but clean, like a professional garden design rendering.`;
-
-    // Call DALL-E API
+    // Call DALL-E API with cost-effective settings for blueprint diagrams
     const response = await openai.images.generate({
       model: "dall-e-3",
       prompt: prompt,
       n: 1,
-      size: "1024x1024",
-      quality: "standard",
+      size: "1024x1024", // Square format good for garden layouts
+      quality: "standard", // Standard quality sufficient for diagrams
       response_format: "url"
     });
 

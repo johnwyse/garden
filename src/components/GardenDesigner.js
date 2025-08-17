@@ -63,11 +63,24 @@ const GardenDesigner = () => {
     
     try {
       // First, generate the garden layout text
-      const layout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
-      setGardenLayout(layout);
+      const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
+      
+      // Split the response to separate user-facing text from visualization data
+      const visualizationIndex = fullLayout.indexOf('VISUALIZATION_DATA:');
+      let displayLayout = fullLayout;
+      let visualizationData = fullLayout;
+      
+      if (visualizationIndex !== -1) {
+        // Extract the user-facing part (everything before VISUALIZATION_DATA:)
+        displayLayout = fullLayout.substring(0, visualizationIndex).trim();
+        // Extract the visualization part for image generation
+        visualizationData = fullLayout.substring(visualizationIndex).replace('VISUALIZATION_DATA:', '').trim();
+      }
+      
+      setGardenLayout(displayLayout);
 
-      // Then, generate the image using the layout as context for alignment
-      const imageUrl = await callGardenImageAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layout);
+      // Then, generate the image using the full layout (including visualization data) as context
+      const imageUrl = await callGardenImageAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
       if (imageUrl) {
         setGardenImage(imageUrl);
       }
@@ -335,13 +348,13 @@ const GardenDesigner = () => {
           
           {gardenImage && (
             <div className="garden-image-container">
-              <h3>Visual Layout</h3>
+              <h3>Garden Blueprint</h3>
               <img 
                 src={gardenImage} 
-                alt="Generated garden layout visualization" 
+                alt="Generated garden layout blueprint diagram" 
                 className="garden-image"
               />
-              <p className="image-caption">AI-generated visualization of your garden layout</p>
+              <p className="image-caption">AI-generated blueprint diagram for garden planning</p>
             </div>
           )}
           

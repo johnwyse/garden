@@ -114,7 +114,8 @@ export default async function handler(req, res) {
     3. Companion planting suggestions
     4. How to best utilize the available trellises and tomato cages with appropriate plants
     5. Seasonal considerations
-    6. A simple visual representation or layout description
+    
+    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by a detailed layout description specifically for image generation. This section should describe exactly where each plant should be positioned within each bed, including specific locations for support structures.
     
     Format the response in a clear, organized manner that would be helpful for a gardener.
     
