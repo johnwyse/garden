@@ -108,10 +108,10 @@ export const generateGardenImage = async (beds2x2, beds4x4, beds4x8, trellises, 
 // Function to generate garden layout SVG using GPT-4
 export const generateGardenSVG = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText = null) => {
   try {
-    // Determine API endpoint based on environment
+    // Determine API endpoint based on environment - use programmatic SVG generation
     const apiUrl = process.env.NODE_ENV === 'production' 
-      ? '/api/generate-garden-svg'  // Vercel API route in production
-      : 'http://localhost:3001/api/generate-garden-svg'; // Local backend in development
+      ? '/api/generate-garden-svg-programmatic'  // Vercel API route in production
+      : 'http://localhost:3001/api/generate-garden-svg-programmatic'; // Local backend in development
 
     const response = await fetch(apiUrl, {
       method: 'POST',
