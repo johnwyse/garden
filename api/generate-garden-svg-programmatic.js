@@ -125,44 +125,57 @@ export default async function handler(req, res) {
     const parseBedAssignments = (layoutText) => {
       if (!layoutText) return null;
       
+      console.log('Parsing layout text:', layoutText.substring(0, 500)); // Debug log
+      
       const bedAssignments = [];
-      // Look for bed assignment patterns in the layout text
-      const bedRegex = /BED\s+(\d+)\s*\(([^)]+)\):\s*([^.\n]+)/gi;
+      
+      // Look for VISUALIZATION_DATA section first
+      const vizDataMatch = layoutText.match(/VISUALIZATION_DATA:\s*([\s\S]*?)(?:\n\n|$)/i);
+      const textToParse = vizDataMatch ? vizDataMatch[1] : layoutText;
+      
+      console.log('Text to parse for beds:', textToParse); // Debug log
+      
+      // Simple pattern: BED 1 (4x4): Plant1, Plant2, Plant3
+      const bedRegex = /BED\s+(\d+)\s*\(([^)]+)\):\s*([^.\n\r]+)/gi;
       let match;
       
-      while ((match = bedRegex.exec(layoutText)) !== null) {
+      while ((match = bedRegex.exec(textToParse)) !== null) {
         const bedNumber = parseInt(match[1]);
         const bedSize = match[2].trim();
         const plantsText = match[3].trim();
         
-        // Parse plants from the text (handle formats like "2 Tomato plants, 4 Basil plants")
-        const plants = [];
-        const plantMatches = plantsText.matchAll(/(\d+)?\s*([A-Za-z\s]+?)(?:\s+plants?)?(?:,|$)/g);
+        console.log(`Found bed ${bedNumber} (${bedSize}): ${plantsText}`); // Debug log
         
-        for (const plantMatch of plantMatches) {
-          const count = parseInt(plantMatch[1]) || 1;
-          const plantName = plantMatch[2].trim();
-          
-          // Find the actual plant name from our selected vegetables
+        // Split plants by comma and clean up
+        const plantNames = plantsText.split(',').map(p => p.trim());
+        const plants = [];
+        
+        for (const plantName of plantNames) {
+          // Find exact match in selected vegetables
           const matchedPlant = selectedVegetables.find(v => 
-            plantName.toLowerCase().includes(v.toLowerCase()) || 
+            v.toLowerCase() === plantName.toLowerCase() ||
+            plantName.toLowerCase().includes(v.toLowerCase()) ||
             v.toLowerCase().includes(plantName.toLowerCase())
           );
           
           if (matchedPlant) {
-            for (let i = 0; i < count; i++) {
-              plants.push(matchedPlant);
-            }
+            plants.push(matchedPlant);
+            console.log(`Matched "${plantName}" to "${matchedPlant}"`); // Debug log
+          } else {
+            console.log(`Could not match "${plantName}" to any selected plant`); // Debug log
           }
         }
         
-        bedAssignments.push({
-          bedNumber,
-          bedSize: bedSize.toLowerCase(),
-          plants
-        });
+        if (plants.length > 0) {
+          bedAssignments.push({
+            bedNumber,
+            bedSize: bedSize.toLowerCase(),
+            plants
+          });
+        }
       }
       
+      console.log('Final bed assignments:', bedAssignments); // Debug log
       return bedAssignments.length > 0 ? bedAssignments : null;
     };
 

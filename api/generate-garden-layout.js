@@ -115,19 +115,19 @@ export default async function handler(req, res) {
     4. How to best utilize the available trellises and tomato cages with appropriate plants
     5. Seasonal considerations
     
-    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by simple placement specifications for SVG generation. This section should specify:
+    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by EXACT bed assignments for SVG generation. Use this PRECISE format:
     
-    For each bed, list:
-    - Bed type (2x2, 4x4, or 4x8)
-    - Plants assigned to that bed and how many of each
-    - Support structures (if any) assigned to that bed
+    VISUALIZATION_DATA:
+    BED 1 (4x4): Tomatoes, Tomatoes, Basil, Basil, Basil, Basil
+    BED 2 (2x2): Cilantro, Parsley, Chives
+    BED 3 (4x8): Beans, Beans, Beans, Carrots, Carrots, Lettuce, Lettuce
     
-    Example format:
-    "BED 1 (4x4): 2 Tomato plants, 4 Basil plants, 1 tomato cage
-    BED 2 (2x2): 3 Herb plants (Cilantro, Parsley, Chives)
-    BED 3 (4x8): 4 Bean plants, 2 Carrot sections, 1 trellis"
-    
-    Keep it simple - just specify which plants go in which beds and quantities.
+    Rules for VISUALIZATION_DATA:
+    - List each individual plant (don't use quantities like "2 Tomato plants")
+    - Use exact plant names from the selected list
+    - Separate plants with commas
+    - Match bed sizes exactly: 2x2, 4x4, or 4x8
+    - Number beds sequentially starting from 1
     
     Format the response in a clear, organized manner that would be helpful for a gardener.
     
