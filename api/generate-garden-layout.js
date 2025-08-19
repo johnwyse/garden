@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { beds2x2, beds4x4, beds4x8, selectedVegetables } = req.body;
+    const { beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables } = req.body;
 
     // Validate input
     if (!selectedVegetables || selectedVegetables.length === 0) {
@@ -40,6 +40,11 @@ export default async function handler(req, res) {
     if (beds4x4 > 0) bedSummary.push(`${beds4x4} bed(s) 4x4 feet`);
     if (beds4x8 > 0) bedSummary.push(`${beds4x8} bed(s) 4x8 feet`);
 
+    // Create support structure summary
+    const supportSummary = [];
+    if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
+    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage(s)`);
+
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
       // Return a simple placeholder response
@@ -47,7 +52,8 @@ export default async function handler(req, res) {
 
         Your Selection:
         - Beds: ${bedSummary.join(', ')}
-        - Vegetables: ${selectedVegetables.join(', ')}
+        ${supportSummary.length > 0 ? `- Support Structures: ${supportSummary.join(', ')}` : ''}
+        - Plants: ${selectedVegetables.join(', ')}
 
         To get personalized garden layouts, add your OPENAI_API_KEY environment variable in your Vercel deployment settings.`;
 
@@ -59,29 +65,86 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    // Categorize the selected plants
+    const vegetables = [];
+    const greens = [];
+    const fruits = [];
+    const herbs = [];
+    const companions = [];
+    
+    // Define plant categories
+    const vegetableList = ['Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'];
+    const greensList = ['Lettuce', 'Spinach', 'Kale', 'Swiss Chard', 'Arugula', 'Bok Choy', 'Collard Greens', 'Mustard Greens', 'Watercress', 'Endive'];
+    const fruitsList = ['Strawberries', 'Blueberries', 'Raspberries', 'Blackberries', 'Rhubarb', 'Melons', 'Watermelons', 'Cantaloupe'];
+    const herbsList = ['Basil', 'Cilantro', 'Parsley', 'Oregano', 'Thyme', 'Rosemary', 'Sage', 'Chives', 'Dill', 'Mint', 'Lavender', 'Tarragon'];
+    const companionsList = ['Wildflowers', 'Marigolds', 'Nasturtiums', 'Sunflowers'];
+    
+    // Categorize selected plants
+    selectedVegetables.forEach(plant => {
+      if (vegetableList.includes(plant)) vegetables.push(plant);
+      else if (greensList.includes(plant)) greens.push(plant);
+      else if (fruitsList.includes(plant)) fruits.push(plant);
+      else if (herbsList.includes(plant)) herbs.push(plant);
+      else if (companionsList.includes(plant)) companions.push(plant);
+    });
+
     // Create prompt for OpenAI
     const prompt = `Please design a vegetable garden layout with the following specifications:
-    - Total beds: ${totalBeds}
-    - Bed configuration: ${bedSummary.join(', ')}
-    - Vegetables to include: ${selectedVegetables.join(', ')}
+    
+    GARDEN SUMMARY:
+    =================
+    Raised Beds: ${totalBeds} total beds (${bedSummary.join(', ')})
+    ${supportSummary.length > 0 ? `Support Structures: ${supportSummary.join(', ')}` : ''}
+    
+    Selected Plants by Category:
+    ${[
+      vegetables.length > 0 ? `• Vegetables (${vegetables.length}): ${vegetables.join(', ')}` : '',
+      greens.length > 0 ? `• Greens (${greens.length}): ${greens.join(', ')}` : '',
+      fruits.length > 0 ? `• Fruits (${fruits.length}): ${fruits.join(', ')}` : '',
+      herbs.length > 0 ? `• Herbs (${herbs.length}): ${herbs.join(', ')}` : '',
+      companions.length > 0 ? `• Companion Plants & Flowers (${companions.length}): ${companions.join(', ')}` : ''
+    ].filter(line => line).join('\n    ')}
+    
+    Total Plants Selected: ${selectedVegetables.length}
+    =================
     
     Please provide a detailed layout plan including:
     1. How to arrange the vegetables in each bed size
     2. Specific spacing recommendations for each bed size
     3. Companion planting suggestions
-    4. Seasonal considerations
-    5. A simple visual representation or layout description
+    4. How to best utilize the available trellises and tomato cages with appropriate plants
+    5. Seasonal considerations
+    
+    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by EXTREMELY detailed placement specifications for SVG generation. This section should include:
+    
+    For each bed (specify bed type and number):
+    - Exact plant positions using grid coordinates (e.g., "top-left corner", "center", "bottom-right", "along north edge")
+    - Specific spacing between plants in inches
+    - Which plants go together in each bed
+    - Precise locations for support structures relative to plants
+    
+    Example format for visualization data:
+    "Bed 1 (4x4): Tomatoes at center (24,24), Basil at corners (6,6), (42,6), (6,42), (42,42). Tomato cage at (24,24) center.
+    Bed 2 (2x2): Herbs arranged in 2x2 grid - Cilantro (6,6), Parsley (18,6), Chives (6,18), Dill (18,18)."
+    
+    Be extremely specific about coordinates and spacing for accurate SVG generation.
     
     Format the response in a clear, organized manner that would be helpful for a gardener.
     
     Consider that:
     - 2x2 feet beds are best for herbs and small plants
     - 4x4 feet beds work well for medium plants and companion planting
-    - 4x8 feet beds are ideal for larger plants like tomatoes and corn`;
+    - 4x8 feet beds are ideal for larger plants like tomatoes and corn
+    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and some tomatoes
+    - Tomato cages are specifically designed for supporting tomato plants and can also work for peppers and eggplants
+    - Match climbing/vining plants to available support structures
+    
+    If there are too many plants selected for the given area, make sure to explain that and what you recommend removing. If there are climbing plants selected but no support structures, recommend adding trellises or suggest alternative growing methods`;
 
+    
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
