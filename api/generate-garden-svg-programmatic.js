@@ -53,20 +53,67 @@ export default async function handler(req, res) {
       }
     });
 
-    // SVG dimensions
-    const svgWidth = 1000;
-    const svgHeight = 700;
-    const bedAreaWidth = 650;
-    const legendAreaX = 700;
+    // Calculate required dimensions based on bed layout
+    const calculateDimensions = () => {
+      let maxBedWidth = 0;
+      let totalHeight = 70; // Start with title space
+      const bedSpacing = 40;
+      
+      // Calculate 2x2 beds dimensions
+      if (beds2x2 > 0) {
+        const bedWidth = 120;
+        const bedHeight = 120;
+        const bedsPerRow = 3;
+        const rows2x2 = Math.ceil(beds2x2 / bedsPerRow);
+        maxBedWidth = Math.max(maxBedWidth, bedsPerRow * (bedWidth + 30) - 30);
+        totalHeight += rows2x2 * (bedHeight + bedSpacing);
+      }
+      
+      // Calculate 4x4 beds dimensions
+      if (beds4x4 > 0) {
+        const bedWidth = 160;
+        const bedHeight = 160;
+        const bedsPerRow = 2;
+        const rows4x4 = Math.ceil(beds4x4 / bedsPerRow);
+        maxBedWidth = Math.max(maxBedWidth, bedsPerRow * (bedWidth + 30) - 30);
+        totalHeight += rows4x4 * (bedHeight + bedSpacing);
+      }
+      
+      // Calculate 4x8 beds dimensions
+      if (beds4x8 > 0) {
+        const bedWidth = 200;
+        const bedHeight = 320;
+        totalHeight += beds4x8 * (bedHeight + bedSpacing);
+        maxBedWidth = Math.max(maxBedWidth, bedWidth);
+      }
+      
+      // Add padding and legend space
+      const bedAreaWidth = maxBedWidth + 100; // 50px padding on each side
+      const legendWidth = 300;
+      const svgWidth = bedAreaWidth + legendWidth;
+      const svgHeight = Math.max(totalHeight + 50, 400); // Minimum height
+      
+      return {
+        svgWidth,
+        svgHeight,
+        bedAreaWidth,
+        legendAreaX: bedAreaWidth + 50
+      };
+    };
 
-    // Start building SVG
-    let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">`;
+    const dimensions = calculateDimensions();
+    const { svgWidth, svgHeight, bedAreaWidth, legendAreaX } = dimensions;
+    
+    console.log('Calculated SVG dimensions:', { svgWidth, svgHeight, bedAreaWidth, legendAreaX }); // Debug log
+
+    // Start building SVG with responsive attributes
+    let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto;">`;
     
     // Background
     svg += `<rect width="${svgWidth}" height="${svgHeight}" fill="#f8fdf8" stroke="none"/>`;
     
     // Title
-    svg += `<text x="500" y="30" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="#2d5a3d">Garden Layout Plan</text>`;
+    svg += `<text x="${svgWidth/2}" y="30" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="#2d5a3d">Garden Layout Plan</text>`;
 
     // Create beds
     let currentY = 70;
@@ -85,22 +132,36 @@ export default async function handler(req, res) {
       return bedSvg;
     };
 
-    // Helper function to add plants to a bed
+    // Helper function to add plants to a bed with overflow protection
     const addPlantsTobed = (bedX, bedY, bedWidth, bedHeight, plants, maxPlantsPerBed = 8) => {
       let plantSvg = '';
       const plantsToShow = plants.slice(0, maxPlantsPerBed);
+      
+      if (plantsToShow.length === 0) return plantSvg;
+      
       const plantsPerRow = Math.ceil(Math.sqrt(plantsToShow.length));
       const padding = 20;
       const availableWidth = bedWidth - (padding * 2);
       const availableHeight = bedHeight - (padding * 2);
+      const plantRadius = 8; // Slightly smaller circles for better fit
+      const textOffset = 18; // Reduced text offset
       
       plantsToShow.forEach((plant, index) => {
         const row = Math.floor(index / plantsPerRow);
         const col = index % plantsPerRow;
         const totalRows = Math.ceil(plantsToShow.length / plantsPerRow);
         
-        const plantX = bedX + padding + (col * availableWidth / plantsPerRow) + (availableWidth / plantsPerRow / 2);
-        const plantY = bedY + padding + (row * availableHeight / totalRows) + (availableHeight / totalRows / 2);
+        // Calculate positions with bounds checking
+        const cellWidth = availableWidth / plantsPerRow;
+        const cellHeight = availableHeight / totalRows;
+        
+        const plantX = Math.max(bedX + padding + plantRadius, 
+                       Math.min(bedX + bedWidth - padding - plantRadius,
+                       bedX + padding + (col * cellWidth) + (cellWidth / 2)));
+        
+        const plantY = Math.max(bedY + padding + plantRadius,
+                       Math.min(bedY + bedHeight - padding - plantRadius - textOffset,
+                       bedY + padding + (row * cellHeight) + (cellHeight / 2)));
         
         // Get plant color
         let plantColor = '#4CAF50'; // default
@@ -111,10 +172,13 @@ export default async function handler(req, res) {
           }
         }
         
+        // Truncate long plant names for better display
+        const displayName = plant.length > 8 ? plant.substring(0, 7) + '...' : plant;
+        
         plantSvg += `
-          <circle cx="${plantX}" cy="${plantY}" r="10" fill="${plantColor}" stroke="#2d5a3d" stroke-width="1"/>
-          <text x="${plantX}" y="${plantY + 25}" font-family="Arial" font-size="10" 
-                text-anchor="middle" fill="#2d5a3d">${plant}</text>
+          <circle cx="${plantX}" cy="${plantY}" r="${plantRadius}" fill="${plantColor}" stroke="#2d5a3d" stroke-width="1"/>
+          <text x="${plantX}" y="${plantY + textOffset}" font-family="Arial" font-size="9" 
+                text-anchor="middle" fill="#2d5a3d">${displayName}</text>
         `;
       });
       
@@ -262,11 +326,17 @@ export default async function handler(req, res) {
       bedNumber++;
     }
 
-    // Create Legend
-    svg += `<text x="${legendAreaX}" y="80" font-family="Arial" font-size="16" font-weight="bold" fill="#2d5a3d">Plant Guide</text>`;
+    // Create Legend with bounds checking
+    const legendStartY = 80;
+    let legendY = legendStartY + 20;
+    const maxLegendItems = Math.floor((svgHeight - legendStartY - 100) / 25); // Calculate how many legend items fit
     
-    let legendY = 100;
-    selectedVegetables.forEach((plant, index) => {
+    svg += `<text x="${legendAreaX}" y="${legendStartY}" font-family="Arial" font-size="16" font-weight="bold" fill="#2d5a3d">Plant Guide</text>`;
+    
+    // Only show legend items that fit in the available space
+    const plantsToShow = selectedVegetables.slice(0, maxLegendItems - 2); // Reserve space for support structures
+    
+    plantsToShow.forEach((plant, index) => {
       // Get plant color
       let plantColor = '#4CAF50'; // default
       for (const [category, data] of Object.entries(plantCategories)) {
@@ -283,17 +353,23 @@ export default async function handler(req, res) {
       legendY += 25;
     });
 
-    // Add support structure info if present
-    if (trellises > 0 || tomatoCages > 0) {
-      legendY += 20;
+    // Show count if we had to truncate the legend
+    if (selectedVegetables.length > plantsToShow.length) {
+      svg += `<text x="${legendAreaX}" y="${legendY}" font-family="Arial" font-size="11" fill="#666">...and ${selectedVegetables.length - plantsToShow.length} more</text>`;
+      legendY += 25;
+    }
+
+    // Add support structure info if present and space allows
+    if ((trellises > 0 || tomatoCages > 0) && legendY < svgHeight - 60) {
+      legendY += 10;
       svg += `<text x="${legendAreaX}" y="${legendY}" font-family="Arial" font-size="14" font-weight="bold" fill="#2d5a3d">Support Structures</text>`;
       legendY += 20;
       
-      if (trellises > 0) {
+      if (trellises > 0 && legendY < svgHeight - 40) {
         svg += `<text x="${legendAreaX}" y="${legendY}" font-family="Arial" font-size="12" fill="#2d5a3d">${trellises} Trellis${trellises > 1 ? 'es' : ''}</text>`;
         legendY += 20;
       }
-      if (tomatoCages > 0) {
+      if (tomatoCages > 0 && legendY < svgHeight - 20) {
         svg += `<text x="${legendAreaX}" y="${legendY}" font-family="Arial" font-size="12" fill="#2d5a3d">${tomatoCages} Tomato Cage${tomatoCages > 1 ? 's' : ''}</text>`;
       }
     }
