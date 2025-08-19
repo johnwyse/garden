@@ -115,7 +115,19 @@ export default async function handler(req, res) {
     4. How to best utilize the available trellises and tomato cages with appropriate plants
     5. Seasonal considerations
     
-    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by a detailed layout description specifically for image generation. This section should describe exactly where each plant should be positioned within each bed, including specific locations for support structures.
+    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by EXTREMELY detailed placement specifications for SVG generation. This section should include:
+    
+    For each bed (specify bed type and number):
+    - Exact plant positions using grid coordinates (e.g., "top-left corner", "center", "bottom-right", "along north edge")
+    - Specific spacing between plants in inches
+    - Which plants go together in each bed
+    - Precise locations for support structures relative to plants
+    
+    Example format for visualization data:
+    "Bed 1 (4x4): Tomatoes at center (24,24), Basil at corners (6,6), (42,6), (6,42), (42,42). Tomato cage at (24,24) center.
+    Bed 2 (2x2): Herbs arranged in 2x2 grid - Cilantro (6,6), Parsley (18,6), Chives (6,18), Dill (18,18)."
+    
+    Be extremely specific about coordinates and spacing for accurate SVG generation.
     
     Format the response in a clear, organized manner that would be helpful for a gardener.
     

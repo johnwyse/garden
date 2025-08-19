@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     const selectedCompanions = selectedVegetables.filter(plant => companions.includes(plant));
 
     // Create detailed prompt for SVG generation
-    let prompt = `Generate a clean, precise SVG diagram for a garden layout blueprint. Create ONLY valid SVG code that can be rendered directly.
+    let prompt = `Generate a clean, precise SVG garden layout diagram. Create ONLY valid SVG code.
 
 GARDEN SPECIFICATIONS:
 - ${totalBeds} raised beds total: ${bedSummary.join(', ')}
@@ -85,23 +85,35 @@ ${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
 ${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
 
 SVG REQUIREMENTS:
-1. Create a clean, technical diagram (800x600 viewBox)
-2. Draw rectangles for each bed with exact dimensions labeled
-3. Use simple circles/icons for plants with text labels
-4. Different colors for plant types: vegetables (green), herbs (purple), fruits (red), etc.
-5. Include trellises as vertical line patterns and tomato cages as triangular shapes
-6. Add a legend/key showing what each symbol means
-7. Use a grid background for measurements
-8. Clean, readable fonts for all labels
-9. Professional blueprint style with clear spacing`;
+1. Use viewBox="0 0 800 600" for consistent sizing
+2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
+3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
+4. Place plants as small circles (r="8") INSIDE bed boundaries only
+5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
+6. Add plant labels as small text (font-size="10") positioned near each circle
+7. Support structures: trellises as vertical rectangles (#8E8E8E), cages as triangular outlines
+8. Create simple legend in bottom-right corner with color meanings
+9. Ensure all elements stay within their designated bed areas
+10. Use clean, readable fonts (Arial or sans-serif)`;
 
     // Add layout guidance if available
     if (layoutText && typeof layoutText === 'string') {
       const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nLAYOUT GUIDANCE: ${cleanLayoutText.substring(0, 300)}`;
+      prompt += `\n\nPRECISE PLACEMENT INSTRUCTIONS: Use these exact coordinates and specifications:
+${cleanLayoutText.substring(0, 500)}
+
+Follow these placement details exactly - position each plant circle at the specified coordinates within each bed rectangle. Ensure no plant circles extend outside bed boundaries.`;
     }
 
-    prompt += `\n\nReturn ONLY the complete SVG code, starting with <svg> and ending with </svg>. No explanations, no markdown formatting, just the raw SVG code.`;
+    prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
+- <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+- Bed rectangles with labels showing dimensions
+- Plant circles positioned exactly inside bed boundaries
+- Support structure shapes positioned correctly
+- Simple legend showing color meanings
+- Close with </svg>
+
+Generate precise, clean SVG code only. No explanations or markdown.`;
 
     // Call GPT-4 for SVG generation
     const completion = await openai.chat.completions.create({
@@ -109,7 +121,7 @@ SVG REQUIREMENTS:
       messages: [
         {
           role: "system",
-          content: "You are an expert at creating clean, technical SVG diagrams. Generate precise, well-structured SVG code for garden layout blueprints. Always return valid SVG code that renders correctly."
+          content: "You are an expert SVG programmer. Generate precise, clean SVG code for garden layout diagrams. Always ensure plant elements are positioned within bed boundaries. Return only valid SVG markup."
         },
         {
           role: "user",
