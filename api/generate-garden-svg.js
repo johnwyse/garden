@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     const selectedCompanions = selectedVegetables.filter(plant => companions.includes(plant));
 
     // Create detailed prompt for SVG generation
-    let prompt = `Generate a clean, precise SVG garden layout diagram. Create ONLY valid SVG code.
+    let prompt = `Generate a clean SVG garden layout diagram. Create ONLY valid SVG code.
 
 GARDEN SPECIFICATIONS:
 - ${totalBeds} raised beds total: ${bedSummary.join(', ')}
@@ -84,36 +84,38 @@ ${selectedFruits.length > 0 ? `• Fruits: ${selectedFruits.join(', ')}` : ''}
 ${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
 ${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
 
-SVG REQUIREMENTS:
-1. Use viewBox="0 0 800 600" for consistent sizing
-2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
-3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
-4. Place plants as small circles (r="8") INSIDE bed boundaries only
-5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
-6. Add plant labels as small text (font-size="10") positioned near each circle
-7. Support structures: trellises as vertical rectangles (#8E8E8E), cages as triangular outlines
-8. Create simple legend in bottom-right corner with color meanings
-9. Ensure all elements stay within their designated bed areas
-10. Use clean, readable fonts (Arial or sans-serif)`;
+SVG LAYOUT REQUIREMENTS:
+1. Use viewBox="0 0 1000 700" for more space
+2. Draw beds as rectangles with black borders in the LEFT AREA (x=50 to x=650)
+3. Bed sizes: 2x2 beds = 100x100px, 4x4 beds = 150x150px, 4x8 beds = 200x300px
+4. Label each bed at the TOP with its size (e.g., "2' x 2' Bed", "4' x 4' Bed")
+5. Place plant circles (radius=12) EVENLY DISTRIBUTED inside each bed
+6. Use colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
+7. Create legend on RIGHT SIDE (x=700 to x=950) listing ONLY plants actually in the garden
+8. Support structures: draw trellises as vertical gray rectangles behind beds, cages as gray triangles
+9. Ensure proper spacing between beds (at least 30px apart)
+10. Use readable fonts (font-family="Arial" font-size="14" for labels, font-size="12" for legend)`;
 
     // Add layout guidance if available
     if (layoutText && typeof layoutText === 'string') {
       const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nPRECISE PLACEMENT INSTRUCTIONS: Use these exact coordinates and specifications:
-${cleanLayoutText.substring(0, 500)}
+      prompt += `\n\nBED ASSIGNMENTS: Use this information to distribute plants across beds:
+${cleanLayoutText.substring(0, 400)}
 
-Follow these placement details exactly - position each plant circle at the specified coordinates within each bed rectangle. Ensure no plant circles extend outside bed boundaries.`;
+For each bed listed above, draw the specified number of plant circles evenly distributed within that bed's rectangle. Place circles with adequate spacing so they don't overlap.`;
     }
 
-    prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
-- <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-- Bed rectangles with labels showing dimensions
-- Plant circles positioned exactly inside bed boundaries
-- Support structure shapes positioned correctly
-- Simple legend showing color meanings
-- Close with </svg>
+    prompt += `\n\nSVG STRUCTURE REQUIREMENTS:
+- <svg viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+- Title at top: "Garden Layout Plan"
+- Beds arranged in left area with size labels above each bed
+- Plant circles distributed inside beds (don't let circles touch bed edges)
+- Legend on right side showing: colored circle + plant name for each plant in the garden
+- Legend title: "Plant Guide"
+- Support structures drawn as simple shapes behind/beside beds
+- Clean, organized layout with proper spacing
 
-Generate precise, clean SVG code only. No explanations or markdown.`;
+Return only the complete SVG markup. No explanations or markdown formatting.`;
 
     // Call GPT-4 for SVG generation
     const completion = await openai.chat.completions.create({
