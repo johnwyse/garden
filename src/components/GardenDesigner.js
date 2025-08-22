@@ -77,7 +77,8 @@ const GardenDesigner = () => {
         visualizationData = fullLayout.substring(visualizationIndex).replace('VISUALIZATION_DATA:', '').trim();
       }
       
-      setGardenLayout(displayLayout);
+      //setGardenLayout(displayLayout);
+      setGardenLayout(fullLayout);
 
       // Then, generate the SVG diagram using the visualization data as context
       const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
