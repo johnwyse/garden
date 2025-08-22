@@ -2,28 +2,16 @@
 
 *Because even vegetables need good neighbors!*
 
-This is my personal garden planning tool that combines my love for gardening with AI technology. As someone who's tired of cramming too many tomatoes into tiny beds or wondering if carrots and onions really make good companions, I built this React app to help design better vegetable garden layouts using OpenAI's intelligence.
+This is my personal garden planning tool that combines my love for gardening with AI technology. I built this React app to help design better vegetable garden layouts using OpenAI's intelligence and to get practice using AI for a practical purpose..
 
 ## What It Actually Does
 
 Instead of guessing where to plant what, this app lets you:
 
 - **Configure your real garden space**: Tell it how many 2×2, 4×4, or 4×8 foot raised beds you have
-- **Pick your vegetables**: Choose from 20 common vegetables I actually grow (tomatoes, lettuce, herbs, etc.)
+- **Pick your vegetables**: Choose from more than 30 common plants (tomatoes, lettuce, herbs, etc.)
 - **Get smart layout advice**: The AI considers companion planting, spacing, sunlight needs, and growth patterns
 - **Learn as you go**: Each recommendation explains *why* certain plants work well together
-
-The best part? It has a fallback mode when the API is down, so you're never left plantless.
-
-## My Garden Setup Journey
-
-I got tired of:
-- Planting tomatoes that shaded out my lettuce
-- Forgetting which herbs pair well with which vegetables  
-- Overcrowding beds and getting disappointing harvests
-- Redoing my garden layout every season from scratch
-
-So I built this tool to remember all the companion planting wisdom and spacing requirements I keep forgetting.
 
 ## Getting Started
 
@@ -69,9 +57,5 @@ The `gardenService.js` intelligently switches between local development (port 30
 - [ ] Include seed packet spacing recommendations
 - [ ] Photo upload for existing garden analysis
 - [ ] Weather-based planting suggestions
-
-## Growing Season Notes
-
-I typically use this app in late winter/early spring when planning the year's garden. The AI recommendations have genuinely improved my harvests by suggesting plant combinations I wouldn't have thought of.
 
 *Happy gardening!* 🥕🍅🥬

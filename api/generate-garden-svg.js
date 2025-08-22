@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText } = req.body;
+    const { beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, layoutText } = req.body;
 
     // Validate input
     if (!selectedVegetables || selectedVegetables.length === 0) {
@@ -55,7 +55,6 @@ export default async function handler(req, res) {
     // Create support structure summary
     const supportSummary = [];
     if (trellises > 0) supportSummary.push(`${trellises} trellis${trellises > 1 ? 'es' : ''}`);
-    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage${tomatoCages > 1 ? 's' : ''}`);
 
     // Categorize plants for better organization
     const vegetables = ['Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'];
@@ -91,7 +90,7 @@ SVG REQUIREMENTS:
 4. Place plants as small circles (r="8") INSIDE bed boundaries only
 5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
 6. Add plant labels as small text (font-size="10") positioned near each circle
-7. Support structures: trellises as vertical rectangles (#8E8E8E), cages as triangular outlines
+7. Show trellises as vertical rectangles (#8E8E8E) behind climbing plants
 8. Create simple legend in bottom-right corner with color meanings
 9. Ensure all elements stay within their designated bed areas
 10. Use clean, readable fonts (Arial or sans-serif)`;
@@ -99,25 +98,28 @@ SVG REQUIREMENTS:
     // Add layout guidance if available
     if (layoutText && typeof layoutText === 'string') {
       const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nPRECISE PLACEMENT INSTRUCTIONS: Use these exact coordinates and specifications:
-${cleanLayoutText.substring(0, 500)}
+      prompt += `\n\nPLANT PLACEMENT GUIDANCE: Use these bed assignments:
+${cleanLayoutText.substring(0, 1000)}
 
-Follow these placement details exactly - position each plant circle at the specified coordinates within each bed rectangle. Ensure no plant circles extend outside bed boundaries.`;
+Follow these plant assignments - place the specified plants within each bed. Distribute plants evenly within each bed boundary.`;
     }
 
     prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
 - <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
 - Bed rectangles with labels showing dimensions
-- Plant circles positioned exactly inside bed boundaries
-- Support structure shapes positioned correctly
+- Plant circles positioned inside bed boundaries
+- Support structure shapes positioned appropriately
 - Simple legend showing color meanings
 - Close with </svg>
 
-Generate precise, clean SVG code only. No explanations or markdown.`;
+Generate precise, clean SVG code only. No explanations or markdown.
+
+Lastly, double check to ensure that all of the diagrams are within the view of the page. If parts of the garden beds will not be visible or are outside the container, rewrite the code to ensure everything is visible. 
+Try to avoid a lot of white space and show the garden beds near each other.`;
 
     // Call GPT-4 for SVG generation
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
