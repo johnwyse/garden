@@ -88,21 +88,34 @@ SVG REQUIREMENTS:
 1. Use viewBox="0 0 800 600" for consistent sizing
 2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
 3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
-4. Place plants as small circles (r="8") INSIDE bed boundaries only
-5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
-6. Add plant labels as small text (font-size="10") positioned near each circle
-7. Support structures: trellises as vertical rectangles (#8E8E8E), cages as triangular outlines
-8. Create simple legend in bottom-right corner with color meanings
-9. Ensure all elements stay within their designated bed areas
-10. Use clean, readable fonts (Arial or sans-serif)`;
+4. Label each bed clearly (e.g., "BED 1 (4x4)", "BED 2 (2x2)")
+5. Place plants as small circles (r="8") INSIDE bed boundaries only
+6. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
+7. Add plant labels as small text (font-size="10") positioned near each circle. Make sure the small text does not overlap other text or plant circles. If so, make the text smaller.
+8. Show trellises as dashed gray lines along the sides of the beds behind climbing plants
+9. Create simple legend in bottom-right corner with color meanings
+10. CRITICAL: Only put plants in beds that are specifically assigned to them in the bed data`;
 
-    // Add layout guidance if available
+    // Add layout guidance if available  
     if (layoutText && typeof layoutText === 'string') {
+      console.log('=== SVG GENERATION INPUT ===');
+      console.log('layoutText received:', layoutText.substring(0, 500));
+      console.log('=== END SVG INPUT ===');
+      
       const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nPRECISE PLACEMENT INSTRUCTIONS: Use these exact coordinates and specifications:
-${cleanLayoutText.substring(0, 500)}
+      prompt += `\n\nCRITICAL BED ASSIGNMENTS - FOLLOW THESE EXACTLY:
+${cleanLayoutText}
 
-Follow these placement details exactly - position each plant circle at the specified coordinates within each bed rectangle. Ensure no plant circles extend outside bed boundaries.`;
+YOU MUST follow these bed assignments precisely. Each bed should contain ONLY the plants listed for that specific bed number and size. Do NOT add random plants or ignore these assignments.
+
+PARSING RULES:
+- Look for "BED X (size): plant1, plant2, plant3" format
+- Each bed gets ONLY the plants listed after the colon
+- If you see "with trellis", add a trellis structure to that specific bed
+- Do NOT put unlisted plants in beds
+- Do NOT randomly distribute plants
+
+Example: If data says "BED 1 (4x4): Carrots, Lettuce, Basil", then BED 1 gets exactly those 3 plants and nothing else.`;
     }
 
     prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
