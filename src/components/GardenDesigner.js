@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
+import { generateGardenLayout as callGardenAPI} from '../services/gardenService';
 
 // Simple markdown to HTML conversion
 const markdownToHtml = (text) => {
@@ -25,7 +26,6 @@ const markdownToHtml = (text) => {
     .replace(/<p><\/p>/g, '')
     .replace(/<p>\s*<\/p>/g, '');
 };
-import { generateGardenLayout as callGardenAPI} from '../services/gardenService';
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
@@ -35,7 +35,7 @@ const GardenDesigner = () => {
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
-  const [gardenImage, setGardenImage] = useState('');
+  // const [gardenImage, setGardenImage] = useState('');
   const [error, setError] = useState('');
 
   // List of plants organized by category
