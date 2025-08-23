@@ -83,7 +83,7 @@ const GardenDesigner = () => {
     setLoading(true);
     setError('');
     setGardenLayout('');
-    setGardenImage('');
+    // setGardenImage('');
     
     try {
       // Generate the garden layout text with structured bed plan
