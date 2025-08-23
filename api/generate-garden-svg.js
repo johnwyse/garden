@@ -132,7 +132,7 @@ Try to avoid a lot of white space and show the garden beds near each other.`;
 
     // Call GPT-4 for SVG generation
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4o", // Fallback to known working model
       messages: [
         {
           role: "system",
@@ -173,6 +173,11 @@ Try to avoid a lot of white space and show the garden beds near each other.`;
 
   } catch (error) {
     console.error('Error generating garden SVG:', error);
+    console.error('Error details:', {
+      status: error.status,
+      message: error.message,
+      response: error.response?.data
+    });
     
     // Handle specific OpenAI errors
     if (error.status === 401) {

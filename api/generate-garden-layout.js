@@ -126,7 +126,7 @@ export default async function handler(req, res) {
     
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4o", // Fallback to known working model
       messages: [
         {
           role: "system",
