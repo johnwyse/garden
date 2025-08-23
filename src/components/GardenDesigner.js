@@ -64,28 +64,10 @@ const GardenDesigner = () => {
       // First, generate the garden layout text
       const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
       
-      // Split the response to separate user-facing text from visualization data
-      const visualizationIndex = fullLayout.indexOf('VISUALIZATION_DATA:');
-      let displayLayout = fullLayout;
-      let visualizationData = fullLayout;
-      
-      if (visualizationIndex !== -1) {
-        // Extract the user-facing part (everything before VISUALIZATION_DATA:)
-        displayLayout = fullLayout.substring(0, visualizationIndex).trim();
-        // Extract the visualization part for image generation
-        visualizationData = fullLayout.substring(visualizationIndex).replace('VISUALIZATION_DATA:', '').trim();
-        
-        // Debug: log what we're sending to SVG generator
-        console.log('=== SENDING TO SVG GENERATOR ===');
-        console.log('Visualization data:', visualizationData);
-        console.log('=== END SVG DATA ===');
-      }
-      
-      //setGardenLayout(displayLayout);
       setGardenLayout(fullLayout);
 
       // Then, generate the SVG diagram using the visualization data as context
-      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, visualizationData);
+      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, fullLayout);
       if (svgUrl) {
         setGardenImage(svgUrl);
       }
