@@ -72,45 +72,58 @@ export default async function handler(req, res) {
     // Create detailed prompt for SVG generation
     let prompt = `Generate a clean, precise SVG garden layout diagram. Create ONLY valid SVG code.
 
-GARDEN SPECIFICATIONS:
-- ${totalBeds} raised beds total: ${bedSummary.join(', ')}
-${supportSummary.length > 0 ? `- Support structures: ${supportSummary.join(', ')}` : ''}
+      GARDEN SPECIFICATIONS:
+      - ${totalBeds} raised beds total: ${bedSummary.join(', ')}
+      ${supportSummary.length > 0 ? `- Support structures: ${supportSummary.join(', ')}` : ''}
 
-PLANTS TO INCLUDE:
-${selectedVeggies.length > 0 ? `• Vegetables: ${selectedVeggies.join(', ')}` : ''}
-${selectedGreens.length > 0 ? `• Greens: ${selectedGreens.join(', ')}` : ''}
-${selectedFruits.length > 0 ? `• Fruits: ${selectedFruits.join(', ')}` : ''}
-${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
-${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
+      PLANTS TO INCLUDE:
+      ${selectedVeggies.length > 0 ? `• Vegetables: ${selectedVeggies.join(', ')}` : ''}
+      ${selectedGreens.length > 0 ? `• Greens: ${selectedGreens.join(', ')}` : ''}
+      ${selectedFruits.length > 0 ? `• Fruits: ${selectedFruits.join(', ')}` : ''}
+      ${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
+      ${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
 
-SVG REQUIREMENTS:
-1. Use viewBox="0 0 800 600" for consistent sizing
-2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
-3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
-4. Place plants as small circles (r="8") INSIDE bed boundaries only
-5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
-6. Add plant labels as small text (font-size="10") positioned near each circle
-7. Show trellises as vertical rectangles (#8E8E8E) behind climbing plants
-8. Create simple legend in bottom-right corner with color meanings
-9. Ensure all elements stay within their designated bed areas
-10. Use clean, readable fonts (Arial or sans-serif)`;
+      SVG REQUIREMENTS:
+      1. Use viewBox="0 0 800 600" for consistent sizing
+      2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
+      3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
+      4. Label each bed clearly (e.g., "BED 1 (4x4)", "BED 2 (2x2)")
+      5. Place plants as small circles (r="8") INSIDE bed boundaries only
+      6. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
+      7. Add plant labels as small text (font-size="10") positioned near each circle. Make sure the small text does not overlap other text or plant circles. If so, make the text smaller.
+      8. Show trellises as dashed gray lines along the sides of the beds behind climbing plants
+      9. Create simple legend in bottom-right corner with color meanings
+      10. CRITICAL: Only put plants in beds that are specifically assigned to them in the bed data`;
 
-    // Add layout guidance if available
+    // Add layout guidance if available  
     if (layoutText && typeof layoutText === 'string') {
-      const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nPLANT PLACEMENT GUIDANCE: Use these bed assignments:
-${cleanLayoutText.substring(0, 1000)}
+      console.log('=== SVG GENERATION INPUT ===');
+      console.log('layoutText received:', layoutText.substring(0, 500));
+      console.log('=== END SVG INPUT ===');
+      
+      prompt += `\n\n Here is the description of the beds and plants. Use #1 to generate the diagrams.
+      
+      ${layoutText}
 
-Follow these plant assignments - place the specified plants within each bed. Distribute plants evenly within each bed boundary.`;
+      YOU MUST follow these bed assignments precisely. Each bed should contain ONLY the plants listed for that specific bed number and size. Do NOT add random plants or ignore these assignments.
+
+      PARSING RULES:
+      - Look for "BED X (size): plant1, plant2, plant3" format
+      - Each bed gets ONLY the plants listed after the colon
+      - If you see "with trellis", add a trellis structure to that specific bed
+      - Do NOT put unlisted plants in beds
+      - Do NOT randomly distribute plants
+
+      Example: If data says "BED 1 (4x4): Carrots, Lettuce, Basil", then BED 1 gets exactly those 3 plants and nothing else.`;
     }
 
-    prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
-- <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-- Bed rectangles with labels showing dimensions
-- Plant circles positioned inside bed boundaries
-- Support structure shapes positioned appropriately
-- Simple legend showing color meanings
-- Close with </svg>
+      prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
+      - <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+      - Bed rectangles with labels showing dimensions
+      - Plant circles positioned exactly inside bed boundaries
+      - Support structure shapes positioned correctly
+      - Simple legend showing color meanings
+      - Close with </svg>
 
 Generate precise, clean SVG code only. No explanations or markdown.
 

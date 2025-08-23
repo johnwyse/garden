@@ -111,28 +111,15 @@ export default async function handler(req, res) {
     1. How to arrange the vegetables in each bed
     2. Specific spacing recommendations for the plants in each bed
     3. Companion planting suggestions
-    4. How to best utilize the available trellises with appropriate climbing plants
-    
-    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by simple bed-by-bed plant assignments for SVG generation. This section should include:
-    
-    For each bed (specify bed type and number):
-    - Which plants go in each bed
-    - Which beds get trellises
-    
-    Example format for visualization data:
-    "BED 1 (4x4): Carrots, Lettuce, Basil, Parsley
-    BED 2 (2x2): Herbs (Cilantro, Chives, Dill)
-    BED 3 (4x8): Beans, Peas, Cucumber (with trellis)"
-    
-    Format the response in a clear, organized manner that would be helpful for a gardener.
+    4. How to best utilize the available trellises with appropriate plants
+    5. Seasonal considerations
     
     Consider that:
     - 2x2 feet beds are best for herbs and small plants
     - 4x4 feet beds work well for medium plants and companion planting
     - 4x8 feet beds are ideal for larger plants like tomatoes and corn
-    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and indeterminate varieties
-    - Match climbing/vining plants to available trellises
-    - For growing areas without trellises, recommend determinate varieties that don't need support
+    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and some tomatoes
+    - Match climbing/vining plants to available support structures
     
     If there are too many or too few plants selected for the given area, make sure to explain that and what you recommend removing or adding. If there are climbing plants selected but no support structures, recommend adding trellises or suggest alternative growing methods`;
 
