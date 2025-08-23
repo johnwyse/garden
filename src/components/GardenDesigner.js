@@ -25,7 +25,7 @@ const markdownToHtml = (text) => {
     .replace(/<p><\/p>/g, '')
     .replace(/<p>\s*<\/p>/g, '');
 };
-import { generateGardenLayout as callGardenAPI, generateGardenSVG as callGardenSVGAPI } from '../services/gardenService';
+import { generateGardenLayout as callGardenAPI} from '../services/gardenService';
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
