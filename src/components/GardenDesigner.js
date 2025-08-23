@@ -61,16 +61,12 @@ const GardenDesigner = () => {
     setGardenImage('');
     
     try {
-      // First, generate the garden layout text
+      // Generate the garden layout text with structured bed plan
       const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
       
       setGardenLayout(fullLayout);
 
-      // Then, generate the SVG diagram using the visualization data as context
-      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, fullLayout);
-      if (svgUrl) {
-        setGardenImage(svgUrl);
-      }
+      // No more SVG generation - the structured text layout is much better!
 
     } catch (error) {
       console.error('Error generating garden content:', error);
@@ -317,22 +313,10 @@ const GardenDesigner = () => {
 
       {gardenLayout && !loading && (
         <div className="results-section">
-          <h2>Your Garden Layout</h2>
-          
-          {gardenImage && (
-            <div className="garden-image-container">
-              <h3>Garden Blueprint</h3>
-              <img 
-                src={gardenImage} 
-                alt="Generated garden layout blueprint diagram" 
-                className="garden-image"
-              />
-              <p className="image-caption">AI-generated SVG blueprint for precise garden planning</p>
-            </div>
-          )}
+          <h2>Your Garden Layout Plan</h2>
           
           <div className="layout-text-container">
-            <h3>Detailed Recommendations</h3>
+            <h3>Detailed Plant Layout & Recommendations</h3>
             <pre className="layout-output">{gardenLayout}</pre>
           </div>
         </div>

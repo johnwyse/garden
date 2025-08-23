@@ -108,20 +108,24 @@ export default async function handler(req, res) {
     =================
     
     Please provide a detailed layout plan including:
-    1. How to arrange the vegetables in each bed
-    2. Specific spacing recommendations for the plants in each bed
-    3. Companion planting suggestions
-    4. How to best utilize the available trellises with appropriate plants
-    5. Seasonal considerations
+    1. Specific bed-by-bed plant assignments with exact counts
+    2. Spacing recommendations with measurements for each plant
+    3. Companion planting suggestions and reasoning
+    4. Support structure assignments (which plants need trellises)
     
-    Consider that:
-    - 2x2 feet beds are best for herbs and small plants
-    - 4x4 feet beds work well for medium plants and companion planting
-    - 4x8 feet beds are ideal for larger plants like tomatoes and corn
-    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and some tomatoes
-    - Match climbing/vining plants to available support structures
+    IMPORTANT: At the end of your response, include a section called "BED LAYOUT PLAN:" followed by a structured breakdown:
     
-    If there are too many or too few plants selected for the given area, make sure to explain that and what you recommend removing or adding. If there are climbing plants selected but no support structures, recommend adding trellises or suggest alternative growing methods`;
+    Format each bed as:
+    "🏡 BED X (dimensions) - Total sq ft
+    ├── 🌱 Plant Name (quantity) - Spacing details
+    ├── 🌱 Plant Name (quantity) - Spacing details  
+    └── Support: Trellis/none"
+    
+    Example:
+    "🏡 BED 1 (4x4 feet) - 16 sq ft
+    ├── 🍅 Tomatoes (2) - Center, 18" apart, need support
+    ├── 🌿 Basil (4) - Corners, 8" spacing
+    └── Support: 1 trellis for tomatoes"`;
 
     
     // Call OpenAI API
@@ -156,14 +160,14 @@ export default async function handler(req, res) {
       throw new Error('Empty response from OpenAI');
     }
 
-    // During development, log the VISUALIZATION_DATA section
-    const vizDataMatch = layout.match(/VISUALIZATION_DATA:\s*([\s\S]*?)(?:\n\n|$)/i);
-    if (vizDataMatch) {
-      console.log('=== VISUALIZATION_DATA SECTION ===');
-      console.log(vizDataMatch[1].trim());
-      console.log('=== END VISUALIZATION_DATA ===');
+    // During development, log the BED LAYOUT PLAN section
+    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN:\s*([\s\S]*?)(?:\n\n|$)/i);
+    if (bedLayoutMatch) {
+      console.log('=== BED LAYOUT PLAN SECTION ===');
+      console.log(bedLayoutMatch[1].trim());
+      console.log('=== END BED LAYOUT PLAN ===');
     } else {
-      console.log('No VISUALIZATION_DATA section found in response');
+      console.log('No BED LAYOUT PLAN section found in response');
     }
 
     res.json({ layout });
