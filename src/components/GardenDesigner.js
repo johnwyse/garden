@@ -1,5 +1,30 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
+
+// Simple markdown to HTML conversion
+const markdownToHtml = (text) => {
+  if (!text) return '';
+  
+  return text
+    // Convert headers
+    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2>$1</h2>')  
+    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+    // Convert bold text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert bullet points
+    .replace(/^- (.*$)/gm, '<li>$1</li>')
+    .replace(/^\* (.*$)/gm, '<li>$1</li>')
+    // Wrap consecutive list items in ul tags
+    .replace(/(<li>.*<\/li>\s*)+/gs, '<ul>$&</ul>')
+    // Convert line breaks to paragraphs
+    .replace(/\n\s*\n/g, '</p><p>')
+    // Wrap in initial paragraph tags
+    .replace(/^(.+)/s, '<p>$1</p>')
+    // Clean up empty paragraphs
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>\s*<\/p>/g, '');
+};
 import { generateGardenLayout as callGardenAPI, generateGardenSVG as callGardenSVGAPI } from '../services/gardenService';
 
 const GardenDesigner = () => {
@@ -317,7 +342,10 @@ const GardenDesigner = () => {
           
           <div className="layout-text-container">
             <h3>Detailed Plant Layout & Recommendations</h3>
-            <pre className="layout-output">{gardenLayout}</pre>
+            <div 
+              className="layout-output"
+              dangerouslySetInnerHTML={{ __html: markdownToHtml(gardenLayout) }}
+            />
           </div>
         </div>
       )}
