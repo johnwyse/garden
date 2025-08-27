@@ -107,13 +107,7 @@ export default async function handler(req, res) {
     Total Plants Selected: ${selectedVegetables.length}
     =================
     
-    Please provide a detailed layout plan including:
-    1. Specific bed-by-bed plant assignments with exact counts
-    2. Spacing recommendations with measurements for each plant
-    3. Companion planting suggestions and reasoning
-    4. Support structure assignments (which plants need trellises)
-    
-    IMPORTANT: At the end of your response, include a section called "BED LAYOUT PLAN:" followed by a structured breakdown:
+    IMPORTANT: At the beginning of your response, include a section called "BED LAYOUT PLAN SUMMARY" followed by a structured breakdown:
     
     Format each bed as:
     "🏡 BED X (dimensions) - Total sq ft
@@ -125,8 +119,13 @@ export default async function handler(req, res) {
     "🏡 BED 1 (4x4 feet) - 16 sq ft
     ├── 🍅 Tomatoes (2) - Center, 18" apart, need support
     ├── 🌿 Basil (4) - Corners, 8" spacing
-    └── Support: 1 trellis for tomatoes"`;
+    └── Support: 1 trellis for tomatoes"
 
+    Then, include a section called "LAYOUT RECOMMENDATIONS:" with detailed planting advice. Provide a detailed layout plan including:
+    1. Specific bed-by-bed plant assignments with exact counts that matches the summary above.
+    2. Spacing recommendations with measurements for each plant
+    3. Companion planting suggestions and reasoning
+    4. Support structure assignments (which plants need trellises)`;
     
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
@@ -141,8 +140,8 @@ export default async function handler(req, res) {
           content: prompt
         }
       ],
-      max_tokens: 1000,
-      temperature: 0.7,
+      max_tokens: 1500,
+      temperature: 0.5,
     });
 
     // Safely extract the response
@@ -161,7 +160,7 @@ export default async function handler(req, res) {
     }
 
     // During development, log the BED LAYOUT PLAN section
-    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN:\s*([\s\S]*?)(?:\n\n|$)/i);
+    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN SUMMARY\s*([\s\S]*?)(?:\n\n|$)/i);
     if (bedLayoutMatch) {
       console.log('=== BED LAYOUT PLAN SECTION ===');
       console.log(bedLayoutMatch[1].trim());
