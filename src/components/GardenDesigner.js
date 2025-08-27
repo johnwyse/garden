@@ -7,6 +7,7 @@ const GardenDesigner = () => {
   const [beds4x4, setBeds4x4] = useState(0);
   const [beds4x8, setBeds4x8] = useState(0);
   const [trellises, setTrellises] = useState(0);
+  const [tomatoCages, setTomatoCages] = useState(0);
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
@@ -62,7 +63,7 @@ const GardenDesigner = () => {
     
     try {
       // First, generate the garden layout text
-      const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
+      const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
       
       // Split the response to separate user-facing text from visualization data
       const visualizationIndex = fullLayout.indexOf('VISUALIZATION_DATA:');
@@ -74,18 +75,13 @@ const GardenDesigner = () => {
         displayLayout = fullLayout.substring(0, visualizationIndex).trim();
         // Extract the visualization part for image generation
         visualizationData = fullLayout.substring(visualizationIndex).replace('VISUALIZATION_DATA:', '').trim();
-        
-        // Debug: log what we're sending to SVG generator
-        console.log('=== SENDING TO SVG GENERATOR ===');
-        console.log('Visualization data:', visualizationData);
-        console.log('=== END SVG DATA ===');
       }
       
       //setGardenLayout(displayLayout);
       setGardenLayout(fullLayout);
 
       // Then, generate the SVG diagram using the visualization data as context
-      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, visualizationData);
+      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
       if (svgUrl) {
         setGardenImage(svgUrl);
       }
@@ -162,6 +158,19 @@ const GardenDesigner = () => {
               id="trellises"
               value={trellises} 
               onChange={(e) => setTrellises(parseInt(e.target.value))}
+            >
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="tomatoCages">Tomato Cages:</label>
+            <select 
+              id="tomatoCages"
+              value={tomatoCages} 
+              onChange={(e) => setTomatoCages(parseInt(e.target.value))}
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                 <option key={num} value={num}>{num}</option>
@@ -283,6 +292,7 @@ const GardenDesigner = () => {
                 {beds4x4 > 0 && <p>{beds4x4} × 4x4 feet bed{beds4x4 > 1 ? 's' : ''}</p>}
                 {beds4x8 > 0 && <p>{beds4x8} × 4x8 feet bed{beds4x8 > 1 ? 's' : ''}</p>}
                 {trellises > 0 && <p>{trellises} × Trellis{trellises > 1 ? 'es' : ''}</p>}
+                {tomatoCages > 0 && <p>{tomatoCages} × Tomato Cage{tomatoCages > 1 ? 's' : ''}</p>}
                 <p className="total-beds">Total: {beds2x2 + beds4x4 + beds4x8} bed{beds2x2 + beds4x4 + beds4x8 > 1 ? 's' : ''}</p>
               </div>
             </div>
