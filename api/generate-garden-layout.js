@@ -159,17 +159,28 @@ export default async function handler(req, res) {
       throw new Error('Empty response from OpenAI');
     }
 
-    // During development, log the BED LAYOUT PLAN section
-    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN SUMMARY\s*([\s\S]*?)(?:\n\n|$)/i);
+    // During development, extract the BED LAYOUT PLAN section for browser debugging
+    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN SUMMARY\s*([\s\S]*?)(?=LAYOUT RECOMMENDATIONS|$)/i);
+    let debugInfo = null;
+    
     if (bedLayoutMatch) {
-      console.log('=== BED LAYOUT PLAN SECTION ===');
-      console.log(bedLayoutMatch[1].trim());
-      console.log('=== END BED LAYOUT PLAN ===');
+      debugInfo = {
+        found: true,
+        section: bedLayoutMatch[1].trim(),
+        message: '=== BED LAYOUT PLAN SECTION ==='
+      };
     } else {
-      console.log('No BED LAYOUT PLAN section found in response');
+      debugInfo = {
+        found: false,
+        section: null,
+        message: 'No BED LAYOUT PLAN section found in response'
+      };
     }
 
-    res.json({ layout });
+    res.json({ 
+      layout,
+      debug: debugInfo
+    });
 
   } catch (error) {
     console.error('Error generating garden layout:', error);
