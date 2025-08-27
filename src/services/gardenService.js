@@ -28,7 +28,20 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises,
     }
 
     const data = await response.json();
-    return data.layout;
+    
+    // Log debug info in browser console if available
+    if (data.debug) {
+      console.log(data.debug.message);
+      if (data.debug.found) {
+        console.log(data.debug.section);
+        console.log('=== END BED LAYOUT PLAN ===');
+      }
+    }
+    
+    return {
+      layout: data.layout,
+      tableHtml: data.tableHtml
+    };
 
   } catch (error) {
     console.error('Error calling garden API:', error);
@@ -43,7 +56,8 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises,
     const supportSummary = [];
     if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
 
-    return `Garden Layout Plan (Fallback):
+    return {
+      layout: `Garden Layout Plan (Fallback):
 
 Bed Configuration: ${totalBeds} total bed(s)
 - ${bedSummary.join('\n- ')}
@@ -56,7 +70,9 @@ Layout Recommendations:
 - Leave adequate spacing between plants for proper growth
 - Consider succession planting for continuous harvests
 
-NOTE: API connection failed. This is a fallback response. Error: ${error.message}`;
+NOTE: API connection failed. This is a fallback response. Error: ${error.message}`,
+      tableHtml: null
+    };
   }
 };
 

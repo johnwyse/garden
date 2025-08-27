@@ -36,6 +36,8 @@ const GardenDesigner = () => {
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
+  const [tableHtml, setTableHtml] = useState('');
+  const [showTableView, setShowTableView] = useState(false);
   // const [gardenImage, setGardenImage] = useState('');
   const [error, setError] = useState('');
 
@@ -84,13 +86,24 @@ const GardenDesigner = () => {
     setLoading(true);
     setError('');
     setGardenLayout('');
+    setTableHtml('');
+    setShowTableView(false);
     // setGardenImage('');
     
     try {
       // Generate the garden layout text with structured bed plan
-      const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
+      const result = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
       
-      setGardenLayout(fullLayout);
+      // Handle both old and new response formats
+      if (typeof result === 'object' && result.layout) {
+        setGardenLayout(result.layout);
+        if (result.tableHtml) {
+          setTableHtml(result.tableHtml);
+        }
+      } else {
+        // Fallback for old string response format
+        setGardenLayout(result);
+      }
 
       // No more SVG generation - the structured text layout is much better!
 
@@ -341,13 +354,41 @@ const GardenDesigner = () => {
         <div className="results-section">
           <h2>Your Garden Layout Plan</h2>
           
-          <div className="layout-text-container">
-            <h3>Detailed Plant Layout & Recommendations</h3>
-            <div 
-              className="layout-output"
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(gardenLayout) }}
-            />
-          </div>
+          {/* View Toggle Buttons - only show if table is available */}
+          {tableHtml && (
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${!showTableView ? 'active' : ''}`}
+                onClick={() => setShowTableView(false)}
+              >
+                📝 Text View
+              </button>
+              <button 
+                className={`toggle-btn ${showTableView ? 'active' : ''}`}
+                onClick={() => setShowTableView(true)}
+              >
+                📊 Table View
+              </button>
+            </div>
+          )}
+          
+          {!showTableView ? (
+            <div className="layout-text-container">
+              <h3>Detailed Plant Layout & Recommendations</h3>
+              <div 
+                className="layout-output"
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(gardenLayout) }}
+              />
+            </div>
+          ) : (
+            <div className="layout-table-container">
+              <h3>Garden Layout Table</h3>
+              <div 
+                className="table-output"
+                dangerouslySetInnerHTML={{ __html: tableHtml }}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

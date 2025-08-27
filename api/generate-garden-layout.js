@@ -162,6 +162,7 @@ export default async function handler(req, res) {
     // During development, extract the BED LAYOUT PLAN section for browser debugging
     const bedLayoutMatch = layout.match(/BED LAYOUT PLAN SUMMARY\s*([\s\S]*?)(?=LAYOUT RECOMMENDATIONS|$)/i);
     let debugInfo = null;
+    let tableHtml = null;
     
     if (bedLayoutMatch) {
       debugInfo = {
@@ -169,6 +170,45 @@ export default async function handler(req, res) {
         section: bedLayoutMatch[1].trim(),
         message: '=== BED LAYOUT PLAN SECTION ==='
       };
+
+      // Generate HTML table from the bed layout text
+      try {
+        const tablePrompt = `Convert the following garden bed layout text into a clean, responsive HTML table. Use proper table structure with headers and make it visually appealing with inline CSS:
+
+${bedLayoutMatch[1].trim()}
+
+Requirements:
+- Use proper HTML table structure (<table>, <thead>, <tbody>, <tr>, <th>, <td>)
+- Include inline CSS for styling (borders, padding, colors, responsive design)
+- Make columns for: Bed, Dimensions, Area, Plants, Spacing, Support
+- Parse the emoji-formatted text and extract the relevant information
+- Use a clean, modern design with good readability
+- Make it mobile-responsive
+- Return ONLY the HTML table code, no explanations`;
+
+        const tableCompletion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert web developer who creates clean, responsive HTML tables. Return only HTML code with inline CSS styling."
+            },
+            {
+              role: "user", 
+              content: tablePrompt
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.3,
+        });
+
+        if (tableCompletion?.choices?.[0]?.message?.content) {
+          tableHtml = tableCompletion.choices[0].message.content.trim();
+        }
+      } catch (tableError) {
+        console.error('Error generating table:', tableError);
+        // Continue without table if there's an error
+      }
     } else {
       debugInfo = {
         found: false,
@@ -179,7 +219,8 @@ export default async function handler(req, res) {
 
     res.json({ 
       layout,
-      debug: debugInfo
+      debug: debugInfo,
+      tableHtml: tableHtml
     });
 
   } catch (error) {
