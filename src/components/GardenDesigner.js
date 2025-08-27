@@ -1,17 +1,44 @@
 import React, { useState } from 'react';
 import './GardenDesigner.css';
-import { generateGardenLayout as callGardenAPI, generateGardenSVG as callGardenSVGAPI } from '../services/gardenService';
+import { generateGardenLayout as callGardenAPI} from '../services/gardenService';
+
+// Simple markdown to HTML conversion
+const markdownToHtml = (text) => {
+  if (!text) return '';
+  
+  return text
+    // Convert headers
+    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2>$1</h2>')  
+    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+    // Convert bold text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert bullet points
+    .replace(/^- (.*$)/gm, '<li>$1</li>')
+    .replace(/^\* (.*$)/gm, '<li>$1</li>')
+    // Wrap consecutive list items in ul tags
+    .replace(/(<li>.*<\/li>\s*)+/gs, '<ul>$&</ul>')
+    // Convert line breaks to paragraphs
+    .replace(/\n\s*\n/g, '</p><p>')
+    // Wrap in initial paragraph tags
+    .replace(/^(.+)/s, '<p>$1</p>')
+    // Clean up empty paragraphs
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>\s*<\/p>/g, '');
+};
 
 const GardenDesigner = () => {
   const [beds2x2, setBeds2x2] = useState(0);
   const [beds4x4, setBeds4x4] = useState(0);
   const [beds4x8, setBeds4x8] = useState(0);
   const [trellises, setTrellises] = useState(0);
-  const [tomatoCages, setTomatoCages] = useState(0);
   const [selectedVegetables, setSelectedVegetables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gardenLayout, setGardenLayout] = useState('');
-  const [gardenImage, setGardenImage] = useState('');
+  const [tableHtml, setTableHtml] = useState('');
+  const [showTableView, setShowTableView] = useState(false);
+  // const [gardenImage, setGardenImage] = useState('');
   const [error, setError] = useState('');
 
   // List of plants organized by category
@@ -59,31 +86,26 @@ const GardenDesigner = () => {
     setLoading(true);
     setError('');
     setGardenLayout('');
-    setGardenImage('');
+    setTableHtml('');
+    setShowTableView(false);
+    // setGardenImage('');
     
     try {
-      // First, generate the garden layout text
-      const fullLayout = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables);
+      // Generate the garden layout text with structured bed plan
+      const result = await callGardenAPI(beds2x2, beds4x4, beds4x8, trellises, selectedVegetables);
       
-      // Split the response to separate user-facing text from visualization data
-      const visualizationIndex = fullLayout.indexOf('VISUALIZATION_DATA:');
-      let displayLayout = fullLayout;
-      let visualizationData = fullLayout;
-      
-      if (visualizationIndex !== -1) {
-        // Extract the user-facing part (everything before VISUALIZATION_DATA:)
-        displayLayout = fullLayout.substring(0, visualizationIndex).trim();
-        // Extract the visualization part for image generation
-        visualizationData = fullLayout.substring(visualizationIndex).replace('VISUALIZATION_DATA:', '').trim();
+      // Handle both old and new response formats
+      if (typeof result === 'object' && result.layout) {
+        setGardenLayout(result.layout);
+        if (result.tableHtml) {
+          setTableHtml(result.tableHtml);
+        }
+      } else {
+        // Fallback for old string response format
+        setGardenLayout(result);
       }
-      
-      setGardenLayout(displayLayout);
 
-      // Then, generate the SVG diagram using the visualization data as context
-      const svgUrl = await callGardenSVGAPI(beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, visualizationData);
-      if (svgUrl) {
-        setGardenImage(svgUrl);
-      }
+      // No more SVG generation - the structured text layout is much better!
 
     } catch (error) {
       console.error('Error generating garden content:', error);
@@ -157,19 +179,6 @@ const GardenDesigner = () => {
               id="trellises"
               value={trellises} 
               onChange={(e) => setTrellises(parseInt(e.target.value))}
-            >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="tomatoCages">Tomato Cages:</label>
-            <select 
-              id="tomatoCages"
-              value={tomatoCages} 
-              onChange={(e) => setTomatoCages(parseInt(e.target.value))}
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                 <option key={num} value={num}>{num}</option>
@@ -291,7 +300,6 @@ const GardenDesigner = () => {
                 {beds4x4 > 0 && <p>{beds4x4} × 4x4 feet bed{beds4x4 > 1 ? 's' : ''}</p>}
                 {beds4x8 > 0 && <p>{beds4x8} × 4x8 feet bed{beds4x8 > 1 ? 's' : ''}</p>}
                 {trellises > 0 && <p>{trellises} × Trellis{trellises > 1 ? 'es' : ''}</p>}
-                {tomatoCages > 0 && <p>{tomatoCages} × Tomato Cage{tomatoCages > 1 ? 's' : ''}</p>}
                 <p className="total-beds">Total: {beds2x2 + beds4x4 + beds4x8} bed{beds2x2 + beds4x4 + beds4x8 > 1 ? 's' : ''}</p>
               </div>
             </div>
@@ -344,24 +352,43 @@ const GardenDesigner = () => {
 
       {gardenLayout && !loading && (
         <div className="results-section">
-          <h2>Your Garden Layout</h2>
+          <h2>Your Garden Layout Plan</h2>
           
-          {gardenImage && (
-            <div className="garden-image-container">
-              <h3>Garden Blueprint</h3>
-              <img 
-                src={gardenImage} 
-                alt="Generated garden layout blueprint diagram" 
-                className="garden-image"
-              />
-              <p className="image-caption">AI-generated SVG blueprint for precise garden planning</p>
+          {/* View Toggle Buttons - only show if table is available */}
+          {tableHtml && (
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${!showTableView ? 'active' : ''}`}
+                onClick={() => setShowTableView(false)}
+              >
+                📝 Text View
+              </button>
+              <button 
+                className={`toggle-btn ${showTableView ? 'active' : ''}`}
+                onClick={() => setShowTableView(true)}
+              >
+                📊 Table View
+              </button>
             </div>
           )}
           
-          <div className="layout-text-container">
-            <h3>Detailed Recommendations</h3>
-            <pre className="layout-output">{gardenLayout}</pre>
-          </div>
+          {!showTableView ? (
+            <div className="layout-text-container">
+              <h3>Detailed Plant Layout & Recommendations</h3>
+              <div 
+                className="layout-output"
+                dangerouslySetInnerHTML={{ __html: markdownToHtml(gardenLayout) }}
+              />
+            </div>
+          ) : (
+            <div className="layout-table-container">
+              <h3>Garden Layout Table</h3>
+              <div 
+                className="table-output"
+                dangerouslySetInnerHTML={{ __html: tableHtml }}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

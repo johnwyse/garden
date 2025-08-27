@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText } = req.body;
+    const { beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, layoutText } = req.body;
 
     // Validate input
     if (!selectedVegetables || selectedVegetables.length === 0) {
@@ -55,7 +55,6 @@ export default async function handler(req, res) {
     // Create support structure summary
     const supportSummary = [];
     if (trellises > 0) supportSummary.push(`${trellises} trellis${trellises > 1 ? 'es' : ''}`);
-    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage${tomatoCages > 1 ? 's' : ''}`);
 
     // Categorize plants for better organization
     const vegetables = ['Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'];
@@ -73,51 +72,67 @@ export default async function handler(req, res) {
     // Create detailed prompt for SVG generation
     let prompt = `Generate a clean, precise SVG garden layout diagram. Create ONLY valid SVG code.
 
-GARDEN SPECIFICATIONS:
-- ${totalBeds} raised beds total: ${bedSummary.join(', ')}
-${supportSummary.length > 0 ? `- Support structures: ${supportSummary.join(', ')}` : ''}
+      GARDEN SPECIFICATIONS:
+      - ${totalBeds} raised beds total: ${bedSummary.join(', ')}
+      ${supportSummary.length > 0 ? `- Support structures: ${supportSummary.join(', ')}` : ''}
 
-PLANTS TO INCLUDE:
-${selectedVeggies.length > 0 ? `• Vegetables: ${selectedVeggies.join(', ')}` : ''}
-${selectedGreens.length > 0 ? `• Greens: ${selectedGreens.join(', ')}` : ''}
-${selectedFruits.length > 0 ? `• Fruits: ${selectedFruits.join(', ')}` : ''}
-${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
-${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
+      PLANTS TO INCLUDE:
+      ${selectedVeggies.length > 0 ? `• Vegetables: ${selectedVeggies.join(', ')}` : ''}
+      ${selectedGreens.length > 0 ? `• Greens: ${selectedGreens.join(', ')}` : ''}
+      ${selectedFruits.length > 0 ? `• Fruits: ${selectedFruits.join(', ')}` : ''}
+      ${selectedHerbs.length > 0 ? `• Herbs: ${selectedHerbs.join(', ')}` : ''}
+      ${selectedCompanions.length > 0 ? `• Companions: ${selectedCompanions.join(', ')}` : ''}
 
-SVG REQUIREMENTS:
-1. Use viewBox="0 0 800 600" for consistent sizing
-2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
-3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
-4. Place plants as small circles (r="8") INSIDE bed boundaries only
-5. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
-6. Add plant labels as small text (font-size="10") positioned near each circle
-7. Support structures: trellises as vertical rectangles (#8E8E8E), cages as triangular outlines
-8. Create simple legend in bottom-right corner with color meanings
-9. Ensure all elements stay within their designated bed areas
-10. Use clean, readable fonts (Arial or sans-serif)`;
+      SVG REQUIREMENTS:
+      1. Use viewBox="0 0 800 600" for consistent sizing
+      2. Draw beds as rectangles with thick black borders (#000, stroke-width="2")
+      3. Scale beds proportionally (2x2=80x80px, 4x4=160x160px, 4x8=160x320px)
+      4. Label each bed clearly (e.g., "BED 1 (4x4)", "BED 2 (2x2)")
+      5. Place plants as small circles (r="8") INSIDE bed boundaries only
+      6. Use distinct colors: vegetables=#4CAF50, herbs=#9C27B0, fruits=#F44336, greens=#8BC34A, companions=#FF9800
+      7. Add plant labels as small text (font-size="10") positioned near each circle. Make sure the small text does not overlap other text or plant circles. If so, make the text smaller.
+      8. Show trellises as dashed gray lines along the sides of the beds behind climbing plants
+      9. Create simple legend in bottom-right corner with color meanings
+      10. CRITICAL: Only put plants in beds that are specifically assigned to them in the bed data`;
 
-    // Add layout guidance if available
+    // Add layout guidance if available  
     if (layoutText && typeof layoutText === 'string') {
-      const cleanLayoutText = layoutText.replace('VISUALIZATION_DATA:', '').trim();
-      prompt += `\n\nPRECISE PLACEMENT INSTRUCTIONS: Use these exact coordinates and specifications:
-${cleanLayoutText.substring(0, 500)}
+      console.log('=== SVG GENERATION INPUT ===');
+      console.log('layoutText received:', layoutText.substring(0, 500));
+      console.log('=== END SVG INPUT ===');
+      
+      prompt += `\n\n Here is the description of the beds and plants. Use #1 to generate the diagrams.
+      
+      ${layoutText}
 
-Follow these placement details exactly - position each plant circle at the specified coordinates within each bed rectangle. Ensure no plant circles extend outside bed boundaries.`;
+      YOU MUST follow these bed assignments precisely. Each bed should contain ONLY the plants listed for that specific bed number and size. Do NOT add random plants or ignore these assignments.
+
+      PARSING RULES:
+      - Look for "BED X (size): plant1, plant2, plant3" format
+      - Each bed gets ONLY the plants listed after the colon
+      - If you see "with trellis", add a trellis structure to that specific bed
+      - Do NOT put unlisted plants in beds
+      - Do NOT randomly distribute plants
+
+      Example: If data says "BED 1 (4x4): Carrots, Lettuce, Basil", then BED 1 gets exactly those 3 plants and nothing else.`;
     }
 
-    prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
-- <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-- Bed rectangles with labels showing dimensions
-- Plant circles positioned exactly inside bed boundaries
-- Support structure shapes positioned correctly
-- Simple legend showing color meanings
-- Close with </svg>
+      prompt += `\n\nSTRUCTURE: Return ONLY complete SVG code with:
+      - <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+      - Bed rectangles with labels showing dimensions
+      - Plant circles positioned exactly inside bed boundaries
+      - Support structure shapes positioned correctly
+      - Simple legend showing color meanings
+      - Close with </svg>
 
-Generate precise, clean SVG code only. No explanations or markdown.`;
+Generate precise, clean SVG code only. No explanations or markdown.
+
+Lastly, double check to ensure that all of the diagrams are within the view of the page. If parts of the garden beds will not be visible or are outside the container, rewrite the code to ensure everything is visible. 
+Try to avoid a lot of white space and show the garden beds near each other.`;
 
     // Call GPT-4 for SVG generation
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o", // Fallback to known working model
       messages: [
         {
           role: "system",
@@ -158,6 +173,11 @@ Generate precise, clean SVG code only. No explanations or markdown.`;
 
   } catch (error) {
     console.error('Error generating garden SVG:', error);
+    console.error('Error details:', {
+      status: error.status,
+      message: error.message,
+      response: error.response?.data
+    });
     
     // Handle specific OpenAI errors
     if (error.status === 401) {

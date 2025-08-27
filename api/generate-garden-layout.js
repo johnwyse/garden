@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables } = req.body;
+    const { beds2x2, beds4x4, beds4x8, trellises, selectedVegetables } = req.body;
 
     // Validate input
     if (!selectedVegetables || selectedVegetables.length === 0) {
@@ -43,7 +43,6 @@ export default async function handler(req, res) {
     // Create support structure summary
     const supportSummary = [];
     if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
-    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage(s)`);
 
     // Check if OpenAI API key is available
     if (!process.env.OPENAI_API_KEY) {
@@ -108,43 +107,29 @@ export default async function handler(req, res) {
     Total Plants Selected: ${selectedVegetables.length}
     =================
     
-    Please provide a detailed layout plan including:
-    1. How to arrange the vegetables in each bed size
-    2. Specific spacing recommendations for each bed size
-    3. Companion planting suggestions
-    4. How to best utilize the available trellises and tomato cages with appropriate plants
-    5. Seasonal considerations
+    IMPORTANT: At the beginning of your response, include a section called "BED LAYOUT PLAN SUMMARY" followed by a structured breakdown:
     
-    IMPORTANT: At the end of your response, include a section called "VISUALIZATION_DATA:" followed by EXTREMELY detailed placement specifications for SVG generation. This section should include:
+    Format each bed as:
+    "🏡 BED X (dimensions) - Total sq ft
+    ├── 🌱 Plant Name (quantity) - Spacing details
+    ├── 🌱 Plant Name (quantity) - Spacing details  
+    └── Support: Trellis/none"
     
-    For each bed (specify bed type and number):
-    - Exact plant positions using grid coordinates (e.g., "top-left corner", "center", "bottom-right", "along north edge")
-    - Specific spacing between plants in inches
-    - Which plants go together in each bed
-    - Precise locations for support structures relative to plants
-    
-    Example format for visualization data:
-    "Bed 1 (4x4): Tomatoes at center (24,24), Basil at corners (6,6), (42,6), (6,42), (42,42). Tomato cage at (24,24) center.
-    Bed 2 (2x2): Herbs arranged in 2x2 grid - Cilantro (6,6), Parsley (18,6), Chives (6,18), Dill (18,18)."
-    
-    Be extremely specific about coordinates and spacing for accurate SVG generation.
-    
-    Format the response in a clear, organized manner that would be helpful for a gardener.
-    
-    Consider that:
-    - 2x2 feet beds are best for herbs and small plants
-    - 4x4 feet beds work well for medium plants and companion planting
-    - 4x8 feet beds are ideal for larger plants like tomatoes and corn
-    - Trellises are perfect for climbing plants like beans, peas, cucumbers, and some tomatoes
-    - Tomato cages are specifically designed for supporting tomato plants and can also work for peppers and eggplants
-    - Match climbing/vining plants to available support structures
-    
-    If there are too many plants selected for the given area, make sure to explain that and what you recommend removing. If there are climbing plants selected but no support structures, recommend adding trellises or suggest alternative growing methods`;
+    Example:
+    "🏡 BED 1 (4x4 feet) - 16 sq ft
+    ├── 🍅 Tomatoes (2) - Center, 18" apart, need support
+    ├── 🌿 Basil (4) - Corners, 8" spacing
+    └── Support: 1 trellis for tomatoes"
 
+    Then, include a section called "LAYOUT RECOMMENDATIONS:" with detailed planting advice. Provide a detailed layout plan including:
+    1. Specific bed-by-bed plant assignments with exact counts that matches the summary above.
+    2. Spacing recommendations with measurements for each plant
+    3. Companion planting suggestions and reasoning
+    4. Support structure assignments (which plants need trellises)`;
     
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o", // Fallback to known working model
       messages: [
         {
           role: "system",
@@ -155,8 +140,8 @@ export default async function handler(req, res) {
           content: prompt
         }
       ],
-      max_tokens: 1000,
-      temperature: 0.7,
+      max_tokens: 1500,
+      temperature: 0.5,
     });
 
     // Safely extract the response
@@ -174,7 +159,69 @@ export default async function handler(req, res) {
       throw new Error('Empty response from OpenAI');
     }
 
-    res.json({ layout });
+    // During development, extract the BED LAYOUT PLAN section for browser debugging
+    const bedLayoutMatch = layout.match(/BED LAYOUT PLAN SUMMARY\s*([\s\S]*?)(?=LAYOUT RECOMMENDATIONS|$)/i);
+    let debugInfo = null;
+    let tableHtml = null;
+    
+    if (bedLayoutMatch) {
+      debugInfo = {
+        found: true,
+        section: bedLayoutMatch[1].trim(),
+        message: '=== BED LAYOUT PLAN SECTION ==='
+      };
+
+      // Generate HTML table from the bed layout text
+      try {
+        const tablePrompt = `Convert the following garden bed layout text into a clean, responsive HTML table. Use proper table structure with headers and make it visually appealing with inline CSS:
+
+${bedLayoutMatch[1].trim()}
+
+Requirements:
+- Use proper HTML table structure (<table>, <thead>, <tbody>, <tr>, <th>, <td>)
+- Include inline CSS for styling (borders, padding, colors, responsive design)
+- Make columns for: Bed, Dimensions, Area, Plants, Spacing, Support
+- Parse the emoji-formatted text and extract the relevant information
+- Use a clean, modern design with good readability
+- Make it mobile-responsive
+- Return ONLY the HTML table code, no explanations`;
+
+        const tableCompletion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert web developer who creates clean, responsive HTML tables. Return only HTML code with inline CSS styling."
+            },
+            {
+              role: "user", 
+              content: tablePrompt
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.3,
+        });
+
+        if (tableCompletion?.choices?.[0]?.message?.content) {
+          tableHtml = tableCompletion.choices[0].message.content.trim();
+        }
+      } catch (tableError) {
+        console.error('Error generating table:', tableError);
+        // Continue without table if there's an error
+      }
+    } else {
+      debugInfo = {
+        found: false,
+        section: null,
+        message: 'No BED LAYOUT PLAN section found in response'
+      };
+    }
+
+    res.json({ 
+      layout,
+      debug: debugInfo,
+      tableHtml: tableHtml
+    });
 
   } catch (error) {
     console.error('Error generating garden layout:', error);
