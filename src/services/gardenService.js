@@ -1,7 +1,7 @@
 // gardenService.js
 // This service handles API calls to the backend for garden layout generation
 
-export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises, selectedVegetables) => {
+export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables) => {
   try {
     // Determine API endpoint based on environment
     const apiUrl = process.env.NODE_ENV === 'production' 
@@ -18,6 +18,7 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises,
         beds4x4,
         beds4x8,
         trellises,
+        tomatoCages,
         selectedVegetables
       })
     });
@@ -42,6 +43,7 @@ export const generateGardenLayout = async (beds2x2, beds4x4, beds4x8, trellises,
     
     const supportSummary = [];
     if (trellises > 0) supportSummary.push(`${trellises} trellis(es)`);
+    if (tomatoCages > 0) supportSummary.push(`${tomatoCages} tomato cage(s)`);
 
     return `Garden Layout Plan (Fallback):
 
@@ -60,50 +62,51 @@ NOTE: API connection failed. This is a fallback response. Error: ${error.message
   }
 };
 
-// // Function to generate garden layout image using DALL-E
-// export const generateGardenImage = async (beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, layoutText = null) => {
-//   try {
-//     // Determine API endpoint based on environment
-//     const apiUrl = process.env.NODE_ENV === 'production' 
-//       ? '/api/generate-garden-image'  // Vercel API route in production
-//       : 'http://localhost:3001/api/generate-garden-image'; // Local backend in development
+// Function to generate garden layout image using DALL-E
+export const generateGardenImage = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText = null) => {
+  try {
+    // Determine API endpoint based on environment
+    const apiUrl = process.env.NODE_ENV === 'production' 
+      ? '/api/generate-garden-image'  // Vercel API route in production
+      : 'http://localhost:3001/api/generate-garden-image'; // Local backend in development
 
-//     const response = await fetch(apiUrl, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         beds2x2,
-//         beds4x4,
-//         beds4x8,
-//         trellises,
-//         selectedVegetables,
-//         layoutText // Pass the generated layout for context
-//       })
-//     });
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        beds2x2,
+        beds4x4,
+        beds4x8,
+        trellises,
+        tomatoCages,
+        selectedVegetables,
+        layoutText // Pass the generated layout for context
+      })
+    });
 
-//     if (!response.ok) {
-//       const errorData = await response.json();
-//       throw new Error(errorData.error || 'Failed to generate garden image');
-//     }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate garden image');
+    }
 
-//     const data = await response.json();
-//     return data.imageUrl;
+    const data = await response.json();
+    return data.imageUrl;
 
-//   } catch (error) {
-//     console.error('Error calling garden image API:', error);
+  } catch (error) {
+    console.error('Error calling garden image API:', error);
     
-//     // Add a small delay to show the loading state
-//     await new Promise(resolve => setTimeout(resolve, 1000));
+    // Add a small delay to show the loading state
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-//     // Return null if image generation fails - we'll handle this gracefully in the UI
-//     return null;
-//   }
-// };
+    // Return null if image generation fails - we'll handle this gracefully in the UI
+    return null;
+  }
+};
 
 // Function to generate garden layout SVG using GPT-4
-export const generateGardenSVG = async (beds2x2, beds4x4, beds4x8, trellises, selectedVegetables, layoutText = null) => {
+export const generateGardenSVG = async (beds2x2, beds4x4, beds4x8, trellises, tomatoCages, selectedVegetables, layoutText = null) => {
   try {
     // Determine API endpoint based on environment
     const apiUrl = process.env.NODE_ENV === 'production' 
@@ -120,6 +123,7 @@ export const generateGardenSVG = async (beds2x2, beds4x4, beds4x8, trellises, se
         beds4x4,
         beds4x8,
         trellises,
+        tomatoCages,
         selectedVegetables,
         layoutText
       })
