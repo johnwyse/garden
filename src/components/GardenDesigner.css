@@ -102,20 +102,24 @@
   display: grid;
   grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr 1fr;
   gap: 8px;
+  align-items: start;
 }
 
 .plant-category {
   margin-bottom: 0;
-  padding: 10px;
+  padding: 12px;
   background: #fafbfa;
   border-radius: 10px;
   border: 1px solid #e8f5e8;
   height: fit-content;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .plant-category h4 {
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   color: #2d5a3d;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.85rem;
@@ -123,15 +127,17 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .category-description {
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
   color: #5a7c5a;
   font-style: italic;
   font-size: 0.7rem;
   line-height: 1.3;
   text-align: left;
+  flex-shrink: 0;
 }
 
 .companions-section {
@@ -143,10 +149,62 @@
   color: #6a1b9a;
 }
 
+/* Garden Setup section styling */
+.plant-category:first-child {
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f9f0 100%);
+  border: 1px solid #c8e6c9;
+}
+
+.plant-category:first-child h4 {
+  color: #2e7d32;
+}
+
+/* Vegetables section styling */
+.vegetables-category {
+  background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+  border: 1px solid #ffcc80;
+}
+
+.vegetables-category h4 {
+  color: #e65100;
+}
+
+/* Greens section styling */
+.plant-category:nth-child(3) {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  border: 1px solid #a5d6a7;
+}
+
+.plant-category:nth-child(3) h4 {
+  color: #1b5e20;
+}
+
+/* Fruits section styling */
+.plant-category:nth-child(4) {
+  background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+  border: 1px solid #f8bbd9;
+}
+
+.plant-category:nth-child(4) h4 {
+  color: #c2185b;
+}
+
+/* Herbs section styling */
+.plant-category:nth-child(5) {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  border: 1px solid #ce93d8;
+}
+
+.plant-category:nth-child(5) h4 {
+  color: #7b1fa2;
+}
+
 .plants-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 6px;
+  flex: 1;
+  align-content: start;
 }
 
 .plant-checkbox {
@@ -174,14 +232,62 @@
 }
 
 .companion-checkbox {
-  background: #fff3e0;
+  background: linear-gradient(135deg, #fff8e1 0%, #f3e5f5 100%);
   border-color: #e1bee7;
 }
 
 .companion-checkbox:hover {
-  background: #f3e5f5;
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
   border-color: #9c27b0;
   box-shadow: 0 2px 6px rgba(156, 39, 176, 0.15);
+}
+
+/* Vegetables checkboxes styling */
+.vegetables-category .plant-checkbox {
+  background: linear-gradient(135deg, #fff8f0 0%, #fcf0f5 100%);
+  border-color: #ffcc80;
+}
+
+.vegetables-category .plant-checkbox:hover {
+  background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+  border-color: #e65100;
+  box-shadow: 0 2px 6px rgba(230, 81, 0, 0.15);
+}
+
+/* Greens checkboxes styling */
+.plant-category:nth-child(3) .plant-checkbox {
+  background: linear-gradient(135deg, #f0f7f0 0%, #e8f2e8 100%);
+  border-color: #a5d6a7;
+}
+
+.plant-category:nth-child(3) .plant-checkbox:hover {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  border-color: #1b5e20;
+  box-shadow: 0 2px 6px rgba(27, 94, 32, 0.15);
+}
+
+/* Fruits checkboxes styling */
+.plant-category:nth-child(4) .plant-checkbox {
+  background: linear-gradient(135deg, #fff0f0 0%, #fcf0f5 100%);
+  border-color: #f8bbd9;
+}
+
+.plant-category:nth-child(4) .plant-checkbox:hover {
+  background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+  border-color: #c2185b;
+  box-shadow: 0 2px 6px rgba(194, 24, 91, 0.15);
+}
+
+/* Herbs checkboxes styling */
+.plant-category:nth-child(5) .plant-checkbox {
+  background: linear-gradient(135deg, #f8f0f8 0%, #f0e8f0 100%);
+  border-color: #ce93d8;
+}
+
+.plant-category:nth-child(5) .plant-checkbox:hover {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  border-color: #7b1fa2;
+  box-shadow: 0 2px 6px rgba(123, 31, 162, 0.15);
 }
 
 .plant-checkbox input {
@@ -195,12 +301,13 @@
   accent-color: #9c27b0;
 }
 
-/* Legacy support for old class name */
+/* Legacy support for old class name - remove old styles */
 .vegetables-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-top: 15px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  flex: 1;
+  align-content: start;
 }
 
 .vegetable-checkbox {
@@ -723,11 +830,4 @@
 
 .plant-category .input-group:last-child {
   margin-bottom: 0;
-}
-
-/* Vegetables category has 2-column internal layout for better space usage */
-.vegetables-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
 }
