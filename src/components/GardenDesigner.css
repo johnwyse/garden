@@ -61,12 +61,7 @@
   font-weight: 500;
 }
 
-.beds-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
-}
+/* Old beds-grid class removed - now using garden-grid */
 
 .input-group {
   margin-bottom: 18px;
@@ -102,16 +97,16 @@
   transform: translateY(-1px);
 }
 
-.plant-categories {
+.garden-grid {
   margin-top: 15px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr 1fr;
+  gap: 8px;
 }
 
 .plant-category {
   margin-bottom: 0;
-  padding: 12px;
+  padding: 10px;
   background: #fafbfa;
   border-radius: 10px;
   border: 1px solid #e8f5e8;
@@ -120,10 +115,10 @@
 }
 
 .plant-category h4 {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: #2d5a3d;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -142,18 +137,10 @@
 .companions-section {
   background: linear-gradient(135deg, #fff8e1 0%, #f3e5f5 100%);
   border: 1px solid #e1bee7;
-  grid-column: 1 / -1; /* Span full width */
-  margin-top: 12px;
 }
 
 .companions-section h4 {
   color: #6a1b9a;
-}
-
-.companions-section .plants-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 6px;
 }
 
 .plants-grid {
@@ -165,7 +152,7 @@
 .plant-checkbox {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 3px 6px;
   background: white;
   border-radius: 6px;
   cursor: pointer;
@@ -174,7 +161,7 @@
   box-shadow: 0 1px 2px rgba(76, 175, 80, 0.05);
   font-weight: 400;
   color: #2d5a3d;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   word-wrap: break-word;
   min-width: 0;
 }
@@ -198,9 +185,9 @@
 }
 
 .plant-checkbox input {
-  margin-right: 6px;
-  width: 14px;
-  height: 14px;
+  margin-right: 4px;
+  width: 12px;
+  height: 12px;
   accent-color: #4caf50;
 }
 
@@ -640,21 +627,28 @@
 }
 
 /* Mobile responsiveness */
-@media (max-width: 1000px) {
-  .plant-categories {
+@media (max-width: 1200px) {
+  .garden-grid {
+    grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr 1fr;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  .garden-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 8px;
   }
 }
 
 @media (max-width: 768px) {
-  .plant-categories {
+  .garden-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
   
-  .companions-section {
-    grid-column: 1 / -1;
+  .vegetables-grid {
+    grid-template-columns: 1fr;
   }
   
   .selection-summary {
@@ -680,18 +674,15 @@
     border-radius: 12px;
   }
   
-  .plant-categories {
+  .plant-categories,
+  .garden-grid {
     grid-template-columns: 1fr;
     gap: 8px;
   }
   
-  .companions-section {
-    grid-column: 1;
-    margin-top: 0;
-  }
-  
-  .companions-section .plants-grid {
+  .garden-grid {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
   
   .plants-grid {
@@ -699,10 +690,6 @@
   }
   
   .vegetables-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .beds-grid {
     grid-template-columns: 1fr;
   }
   
@@ -727,4 +714,20 @@
   .plant-category h4 {
     font-size: 0.85rem;
   }
+}
+
+/* Adjust input groups within plant categories for bed setup */
+.plant-category .input-group {
+  margin-bottom: 12px;
+}
+
+.plant-category .input-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Vegetables category has 2-column internal layout for better space usage */
+.vegetables-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }

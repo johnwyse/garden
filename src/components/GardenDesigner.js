@@ -44,13 +44,13 @@ const GardenDesigner = () => {
   // List of plants organized by category
   const vegetables = [
     'Tomatoes', 'Carrots', 'Peppers', 'Onions', 'Radishes', 'Beans', 
-    'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 'Beets', 
-    'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage', 'Leeks'
+    'Peas', 'Cucumber', 'Zucchini', 'Broccoli', 'Cauliflower', 
+    'Corn', 'Squash', 'Eggplant', 'Brussels Sprouts', 'Cabbage'
   ];
 
   const greens = [
     'Lettuce', 'Spinach', 'Kale', 'Swiss Chard', 'Arugula', 'Bok Choy',
-    'Collard Greens', 'Mustard Greens', 'Watercress', 'Endive'
+    'Collard Greens', 'Mustard Greens'
   ];
 
   const fruits = [
@@ -60,7 +60,7 @@ const GardenDesigner = () => {
 
   const herbs = [
     'Basil', 'Cilantro', 'Parsley', 'Oregano', 'Thyme', 'Rosemary',
-    'Sage', 'Chives', 'Dill', 'Mint', 'Lavender', 'Tarragon'
+    'Sage', 'Mint'
   ];
 
   const companions = [
@@ -131,69 +131,63 @@ const GardenDesigner = () => {
       <h1>Garden Layout Designer</h1>
       
       <div className="input-section">
-        <h3>Select Your Raised Beds</h3>
+        <h3>Configure Your Garden</h3>
         
-        <div className="beds-grid">
-          <div className="input-group">
-            <label htmlFor="beds2x2">2' x 2' beds:</label>
-            <select 
-              id="beds2x2"
-              value={beds2x2} 
-              onChange={(e) => setBeds2x2(parseInt(e.target.value))}
-            >
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
+        <div className="garden-grid">
+          <div className="plant-category">
+            <h4>🏡 Garden Setup</h4>
+            <div className="input-group">
+              <label htmlFor="beds2x2">2' x 2' beds:</label>
+              <select 
+                id="beds2x2"
+                value={beds2x2} 
+                onChange={(e) => setBeds2x2(parseInt(e.target.value))}
+              >
+                {[0, 1, 2, 3, 4, 5].map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label htmlFor="beds4x4">4' x 4' beds:</label>
+              <select 
+                id="beds4x4"
+                value={beds4x4} 
+                onChange={(e) => setBeds4x4(parseInt(e.target.value))}
+              >
+                {[0, 1, 2, 3, 4, 5].map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label htmlFor="beds4x8">4' x 8' beds:</label>
+              <select 
+                id="beds4x8"
+                value={beds4x8} 
+                onChange={(e) => setBeds4x8(parseInt(e.target.value))}
+              >
+                {[0, 1, 2, 3, 4, 5].map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+            <div className="input-group">
+              <label htmlFor="trellises">Trellises:</label>
+              <select 
+                id="trellises"
+                value={trellises} 
+                onChange={(e) => setTrellises(parseInt(e.target.value))}
+              >
+                {[0, 1, 2, 3, 4, 5].map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
           </div>
-
-          <div className="input-group">
-            <label htmlFor="beds4x4">4' x 4' beds:</label>
-            <select 
-              id="beds4x4"
-              value={beds4x4} 
-              onChange={(e) => setBeds4x4(parseInt(e.target.value))}
-            >
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="beds4x8">4' x 8' beds:</label>
-            <select 
-              id="beds4x8"
-              value={beds4x8} 
-              onChange={(e) => setBeds4x8(parseInt(e.target.value))}
-            >
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="trellises">Trellises:</label>
-            <select 
-              id="trellises"
-              value={trellises} 
-              onChange={(e) => setTrellises(parseInt(e.target.value))}
-            >
-              {[0, 1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="input-group">
-          <label>Select Plants for Your Garden:</label>
-          
-          <div className="plant-categories">
-            <div className="plant-category">
+            <div className="plant-category vegetables-category">
               <h4>🥕 Vegetables</h4>
-              <div className="plants-grid">
+              <div className="vegetables-grid">
                 {vegetables.map(vegetable => (
                   <label key={vegetable} className="plant-checkbox">
                     <input
@@ -256,8 +250,8 @@ const GardenDesigner = () => {
             </div>
 
             <div className="plant-category companions-section">
-              <h4>🌸 Companion Plants & Flowers</h4>
-              <p className="category-description">Optional additions for pest control and pollinator attraction</p>
+              <h4>🌸 Companion Plants</h4>
+              <p className="category-description"><em>These plants help deter pests and attract beneficial insects</em></p>
               <div className="plants-grid">
                 {companions.map(companion => (
                   <label key={companion} className="plant-checkbox companion-checkbox">
@@ -272,7 +266,6 @@ const GardenDesigner = () => {
               </div>
             </div>
           </div>
-        </div>
 
         <button 
           onClick={generateGardenLayout}
