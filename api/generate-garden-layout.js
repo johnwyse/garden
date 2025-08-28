@@ -184,6 +184,8 @@ Requirements:
 - Parse the emoji-formatted text and extract the relevant information
 - Use a clean, modern design with good readability
 - Make it mobile-responsive
+- IMPORTANT: Include ALL beds from the layout text - do not truncate or skip any rows
+- Ensure every bed mentioned in the text appears as a complete row in the table
 - Return ONLY the HTML table code, no explanations`;
 
         const tableCompletion = await openai.chat.completions.create({
@@ -198,7 +200,7 @@ Requirements:
               content: tablePrompt
             }
           ],
-          max_tokens: 1000,
+          max_tokens: 2000, // Increased from 1000 to handle larger tables with more beds
           temperature: 0.3,
         });
 

@@ -141,7 +141,7 @@ const GardenDesigner = () => {
               value={beds2x2} 
               onChange={(e) => setBeds2x2(parseInt(e.target.value))}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+              {[0, 1, 2, 3, 4, 5].map(num => (
                 <option key={num} value={num}>{num}</option>
               ))}
             </select>
@@ -154,7 +154,7 @@ const GardenDesigner = () => {
               value={beds4x4} 
               onChange={(e) => setBeds4x4(parseInt(e.target.value))}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+              {[0, 1, 2, 3, 4, 5].map(num => (
                 <option key={num} value={num}>{num}</option>
               ))}
             </select>
@@ -167,7 +167,7 @@ const GardenDesigner = () => {
               value={beds4x8} 
               onChange={(e) => setBeds4x8(parseInt(e.target.value))}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+              {[0, 1, 2, 3, 4, 5].map(num => (
                 <option key={num} value={num}>{num}</option>
               ))}
             </select>
@@ -180,7 +180,7 @@ const GardenDesigner = () => {
               value={trellises} 
               onChange={(e) => setTrellises(parseInt(e.target.value))}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+              {[0, 1, 2, 3, 4, 5].map(num => (
                 <option key={num} value={num}>{num}</option>
               ))}
             </select>
