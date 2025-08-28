@@ -32,7 +32,6 @@ Visit `http://localhost:3000` and start planning your garden!
 ### Production Deploy
 The app runs on Vercel with a serverless function (`/api/generate-garden-layout.js`) that handles OpenAI API calls securely. No API keys exposed to the frontend.
 
-
 The `gardenService.js` intelligently switches between local development (port 3001) and production API endpoints.
 
 ## Future Ideas
@@ -40,5 +39,6 @@ The `gardenService.js` intelligently switches between local development (port 30
 - [ ] Save and compare different layout plans
 - [ ] Add planting calendar integration
 - [ ] Weather-based planting suggestions
+- [ ] Image generation of the garden layout
 
 *Happy gardening!* 🥕🍅🥬
