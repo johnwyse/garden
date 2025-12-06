@@ -90,6 +90,8 @@ export default async function handler(req, res) {
     // Create prompt for OpenAI
     const prompt = `Please design a vegetable garden layout with the following specifications:
     
+    IMPORTANT: If any of the plants listed below seem invalid, are not actual plants, or appear to be gibberish (like random characters or non-plant objects), simply ignore them completely and only work with the valid, recognizable plants.
+    
     GARDEN SUMMARY:
     =================
     Raised Beds: ${totalBeds} total beds (${bedSummary.join(', ')})

@@ -38,8 +38,18 @@ const GardenDesigner = () => {
   const [gardenLayout, setGardenLayout] = useState('');
   const [tableHtml, setTableHtml] = useState('');
   const [showTableView, setShowTableView] = useState(false);
-  // const [gardenImage, setGardenImage] = useState('');
   const [error, setError] = useState('');
+
+  // Custom plants state
+  const [showCustomPlants, setShowCustomPlants] = useState(false);
+  const [customPlantInput, setCustomPlantInput] = useState('');
+  const [customPlants, setCustomPlants] = useState({
+    vegetables: [],
+    greens: [],
+    fruits: [],
+    herbs: []
+  });
+  const [inputError, setInputError] = useState('');
 
   // List of plants organized by category
   const vegetables = [
@@ -66,6 +76,70 @@ const GardenDesigner = () => {
   const companions = [
     'Wildflowers', 'Marigolds', 'Nasturtiums', 'Sunflowers'
   ];
+
+  // Validate plant name (only letters, spaces, hyphens, apostrophes)
+  const validatePlantName = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return 'Plant name cannot be empty';
+    if (trimmed.length < 2) return 'Plant name must be at least 2 characters';
+    if (trimmed.length > 25) return 'Plant name must be less than 25 characters';
+    if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) {
+      return 'Plant name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+    return null;
+  };
+
+  // Get all plants including custom ones
+  const getAllVegetables = () => [...vegetables, ...customPlants.vegetables];
+  const getAllGreens = () => [...greens, ...customPlants.greens];
+  const getAllFruits = () => [...fruits, ...customPlants.fruits];
+  const getAllHerbs = () => [...herbs, ...customPlants.herbs];
+
+  // Add custom plants from comma-separated input
+  const handleAddCustomPlants = (category) => {
+    const plants = customPlantInput.split(',').map(p => p.trim()).filter(p => p);
+    const errors = [];
+    const validPlants = [];
+    
+    for (const plant of plants) {
+      const error = validatePlantName(plant);
+      if (error) {
+        errors.push(`"${plant}": ${error}`);
+      } else {
+        // Check if already exists
+        const allExisting = [...vegetables, ...greens, ...fruits, ...herbs, ...customPlants[category]];
+        if (allExisting.some(existing => existing.toLowerCase() === plant.toLowerCase())) {
+          errors.push(`"${plant}": already exists`);
+        } else {
+          validPlants.push(plant);
+        }
+      }
+    }
+    
+    if (errors.length > 0) {
+      setInputError(errors.join(', '));
+      return;
+    }
+    
+    if (validPlants.length > 0) {
+      setCustomPlants(prev => ({
+        ...prev,
+        [category]: [...prev[category], ...validPlants]
+      }));
+      setCustomPlantInput('');
+      setInputError('');
+    }
+  };
+
+  // Remove a custom plant
+  const removeCustomPlant = (category, plantName) => {
+    setCustomPlants(prev => ({
+      ...prev,
+      [category]: prev[category].filter(p => p !== plantName)
+    }));
+    // Also remove from selected if it was selected
+    setSelectedVegetables(prev => prev.filter(p => p !== plantName));
+  };
 
   const handleVegetableChange = (plant) => {
     setSelectedVegetables(prev => 
@@ -188,14 +262,28 @@ const GardenDesigner = () => {
             <div className="plant-category vegetables-category">
               <h4>🥕 Vegetables</h4>
               <div className="vegetables-grid">
-                {vegetables.map(vegetable => (
+                {getAllVegetables().map(vegetable => (
                   <label key={vegetable} className="plant-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedVegetables.includes(vegetable)}
-                      onChange={() => handleVegetableChange(vegetable)}
-                    />
-                    {vegetable}
+                    <div className="plant-info">
+                      <input
+                        type="checkbox"
+                        checked={selectedVegetables.includes(vegetable)}
+                        onChange={() => handleVegetableChange(vegetable)}
+                      />
+                      {vegetable}
+                    </div>
+                    {customPlants.vegetables.includes(vegetable) && (
+                      <button
+                        className="remove-custom-plant"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeCustomPlant('vegetables', vegetable);
+                        }}
+                        title="Remove custom plant"
+                      >
+                        ×
+                      </button>
+                    )}
                   </label>
                 ))}
               </div>
@@ -204,14 +292,28 @@ const GardenDesigner = () => {
             <div className="plant-category">
               <h4>🥬 Greens</h4>
               <div className="plants-grid">
-                {greens.map(green => (
+                {getAllGreens().map(green => (
                   <label key={green} className="plant-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedVegetables.includes(green)}
-                      onChange={() => handleVegetableChange(green)}
-                    />
-                    {green}
+                    <div className="plant-info">
+                      <input
+                        type="checkbox"
+                        checked={selectedVegetables.includes(green)}
+                        onChange={() => handleVegetableChange(green)}
+                      />
+                      {green}
+                    </div>
+                    {customPlants.greens.includes(green) && (
+                      <button
+                        className="remove-custom-plant"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeCustomPlant('greens', green);
+                        }}
+                        title="Remove custom plant"
+                      >
+                        ×
+                      </button>
+                    )}
                   </label>
                 ))}
               </div>
@@ -220,14 +322,28 @@ const GardenDesigner = () => {
             <div className="plant-category">
               <h4>🍓 Fruits</h4>
               <div className="plants-grid">
-                {fruits.map(fruit => (
+                {getAllFruits().map(fruit => (
                   <label key={fruit} className="plant-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedVegetables.includes(fruit)}
-                      onChange={() => handleVegetableChange(fruit)}
-                    />
-                    {fruit}
+                    <div className="plant-info">
+                      <input
+                        type="checkbox"
+                        checked={selectedVegetables.includes(fruit)}
+                        onChange={() => handleVegetableChange(fruit)}
+                      />
+                      {fruit}
+                    </div>
+                    {customPlants.fruits.includes(fruit) && (
+                      <button
+                        className="remove-custom-plant"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeCustomPlant('fruits', fruit);
+                        }}
+                        title="Remove custom plant"
+                      >
+                        ×
+                      </button>
+                    )}
                   </label>
                 ))}
               </div>
@@ -236,14 +352,28 @@ const GardenDesigner = () => {
             <div className="plant-category">
               <h4>🌿 Herbs</h4>
               <div className="plants-grid">
-                {herbs.map(herb => (
+                {getAllHerbs().map(herb => (
                   <label key={herb} className="plant-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedVegetables.includes(herb)}
-                      onChange={() => handleVegetableChange(herb)}
-                    />
-                    {herb}
+                    <div className="plant-info">
+                      <input
+                        type="checkbox"
+                        checked={selectedVegetables.includes(herb)}
+                        onChange={() => handleVegetableChange(herb)}
+                      />
+                      {herb}
+                    </div>
+                    {customPlants.herbs.includes(herb) && (
+                      <button
+                        className="remove-custom-plant"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeCustomPlant('herbs', herb);
+                        }}
+                        title="Remove custom plant"
+                      >
+                        ×
+                      </button>
+                    )}
                   </label>
                 ))}
               </div>
@@ -266,6 +396,96 @@ const GardenDesigner = () => {
               </div>
             </div>
           </div>
+
+        {/* Custom Plants Section */}
+        <div className="custom-plants-section">
+          <button
+            className="toggle-custom-plants"
+            onClick={() => setShowCustomPlants(!showCustomPlants)}
+          >
+            {showCustomPlants ? '▼' : '▶'} Add Custom Plants
+          </button>
+          
+          {showCustomPlants && (
+            <div className="custom-plants-form">
+              <div className="input-group">
+                <label>Enter plants (separate multiple plants with commas):</label>
+                <textarea
+                  value={customPlantInput}
+                  onChange={(e) => {
+                    setCustomPlantInput(e.target.value);
+                    setInputError('');
+                  }}
+                  placeholder="e.g. Cherry Tomatoes, Purple Basil, Baby Spinach"
+                  className="custom-plant-textarea"
+                  rows="2"
+                />
+                {inputError && <div className="input-error">{inputError}</div>}
+              </div>
+
+              <div className="category-buttons">
+                <button
+                  className="category-btn vegetables"
+                  onClick={() => handleAddCustomPlants('vegetables')}
+                  disabled={!customPlantInput.trim()}
+                >
+                  Add to 🥕 Vegetables
+                </button>
+                <button
+                  className="category-btn greens"
+                  onClick={() => handleAddCustomPlants('greens')}
+                  disabled={!customPlantInput.trim()}
+                >
+                  Add to 🥬 Greens
+                </button>
+                <button
+                  className="category-btn fruits"
+                  onClick={() => handleAddCustomPlants('fruits')}
+                  disabled={!customPlantInput.trim()}
+                >
+                  Add to 🍓 Fruits
+                </button>
+                <button
+                  className="category-btn herbs"
+                  onClick={() => handleAddCustomPlants('herbs')}
+                  disabled={!customPlantInput.trim()}
+                >
+                  Add to 🌿 Herbs
+                </button>
+              </div>
+
+              {/* Show added custom plants */}
+              {Object.entries(customPlants).some(([_, plants]) => plants.length > 0) && (
+                <div className="added-plants">
+                  <h4>Your Custom Plants:</h4>
+                  {Object.entries(customPlants).map(([category, plants]) => (
+                    plants.length > 0 && (
+                      <div key={category} className="plant-group">
+                        <strong>
+                          {category === 'vegetables' && '🥕 Vegetables: '}
+                          {category === 'greens' && '🥬 Greens: '}
+                          {category === 'fruits' && '🍓 Fruits: '}
+                          {category === 'herbs' && '🌿 Herbs: '}
+                        </strong>
+                        {plants.map(plant => (
+                          <span key={plant} className="custom-plant-tag">
+                            {plant}
+                            <button
+                              onClick={() => removeCustomPlant(category, plant)}
+                              title="Remove"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <button 
           onClick={generateGardenLayout}
